@@ -1,0 +1,59 @@
+/* General Body */
+body {
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Headings */
+h1, h2 {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Table Styling */
+table {
+  width: 90%;
+  margin: 20px auto;
+  border-collapse: collapse;
+}
+
+table th {
+  background: #334155;
+  color: #f8fafc;
+  padding: 10px;
+}
+
+table td {
+  border: 1px solid #1e293b;
+  padding: 8px;
+  text-align: center;
+}
+
+tr:nth-child(even) {
+  background: #1e293b;
+}
+
+/* Inputs & Buttons */
+input, select {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: #22c55e;
+  color: #fff;
+  padding: 8px 12px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #16a34a;
+  }
