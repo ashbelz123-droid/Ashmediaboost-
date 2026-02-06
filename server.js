@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require("path");
 
 // Load environment variables
 dotenv.config();
@@ -11,6 +12,9 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files (like style.css) from root
+app.use(express.static(path.join(__dirname)));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
@@ -26,7 +30,16 @@ app.use("/admin", require("./routes/admin"));
 
 // Home page
 app.get("/", (req, res) => {
-  res.send(`<h1>🚀 Welcome to ${process.env.SITE_NAME || "Ashbooster"}!</h1>`);
+  res.send(`
+    <html>
+      <head>
+        <link rel="stylesheet" href="/style.css">
+      </head>
+      <body>
+        <h1>🚀 Welcome to ${process.env.SITE_NAME || "Ashbooster"}!</h1>
+      </body>
+    </html>
+  `);
 });
 
 // Start server
