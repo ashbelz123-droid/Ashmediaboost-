@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | AshMediaBoost</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Admin Panel</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="#" id="adminLogout">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Login to Admin</h2>
+    <form id="adminLoginForm">
+      <input type="text" id="adminUsername" placeholder="Username" required>
+      <input type="password" id="adminPassword" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <div id="adminDashboard" style="display:none;">
+      <h2>Dashboard</h2>
+
+      <section>
+        <h3>Users</h3>
+        <table id="usersTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Country</th>
+              <th>Currency</th>
+              <th>Wallet</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section>
+        <h3>Orders</h3>
+        <table id="ordersTable">
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Platform</th>
+              <th>Provider</th>
+              <th>Tier</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section>
+        <h3>Currency Rates</h3>
+        <div id="currencyRates"></div>
+        <form id="updateCurrencyForm">
+          <input type="text" id="currencyName" placeholder="Currency Code (UGX/KES/etc)" required>
+          <input type="number" id="currencyRate" placeholder="Rate" step="any" required>
+          <button type="submit">Update</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+  </html>
