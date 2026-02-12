@@ -2,31 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Place Order | AshMediaBoost</title>
+  <title>Place Order - AshMediaBoost</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>AshMediaBoost</h1>
-    <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="#" id="logoutBtn">Logout</a>
-    </nav>
-  </header>
+  <h1>Place an Order</h1>
+  <form id="orderForm">
+    <label>Service ID:</label><br>
+    <input type="text" id="serviceId" required><br>
+    <label>Provider:</label><br>
+    <input type="text" id="provider" required><br>
+    <label>Quantity:</label><br>
+    <input type="number" id="quantity" required><br><br>
+    <button type="submit">Place Order</button>
+  </form>
 
-  <main>
-    <h2>Place Order</h2>
-    <form id="orderForm">
-      <select id="serviceSelect" required></select>
-      <input type="number" id="quantity" placeholder="Quantity" min="1" required>
-      <button type="submit">Place Order</button>
-    </form>
-    <div id="orderMsg"></div>
-  </main>
+  <script>
+    document.getElementById("orderForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const serviceId = document.getElementById("serviceId").value;
+      const provider = document.getElementById("provider").value;
+      const quantity = document.getElementById("quantity").value;
+      const userId = prompt("Enter your user ID");
 
-  <a href="https://wa.me/0740421134" class="whatsapp-float" target="_blank">💬 WhatsApp</a>
+      const res = await fetch("/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, serviceId, provider, quantity })
+      });
 
-  <script src="script.js"></script>
+      const data = await res.json();
+      alert(data.status === "success" ? "Order placed! ID: " + data.orderId : data.msg);
+    });
+  </script>
 </body>
 </html>
