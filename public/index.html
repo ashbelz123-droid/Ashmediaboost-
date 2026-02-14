@@ -4,178 +4,171 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AshMediaBoost Panel</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 15px 0;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    select, input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 95%;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    .package {
+      margin-top: 15px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .package h3 {
+      margin: 5px 0;
+    }
+
+    .package p {
+      margin: 5px 0;
+    }
+
+    .flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .flag {
+      font-size: 24px;
+    }
+
+  </style>
 </head>
 <body>
 
-<div class="dashboard">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <h2>AshMediaBoost</h2>
-    <nav>
-      <ul>
-        <li><a href="#" class="active" data-section="packages">Packages</a></li>
-        <li><a href="#" data-section="wallet">Wallet</a></li>
-        <li><a href="#" data-section="admin">Admin</a></li>
-      </ul>
-    </nav>
-  </aside>
+  <div class="card">
+    <h2>Welcome to AshMediaBoost</h2>
+    <select id="countrySelect">
+      <option value="">Select your country</option>
+    </select>
+    <button onclick="loadPackages()">Load Packages</button>
+  </div>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Packages Section -->
-    <section id="packages-section">
-      <h1>Packages</h1>
+  <div id="packagesContainer"></div>
 
-      <!-- Currency Selector -->
-      <div class="currency-select">
-        <label for="currency">Select Currency:</label>
-        <select id="currency">
-          <option value="USD">USD 🇺🇸</option>
-          <option value="UGX">UGX 🇺🇬</option>
-          <option value="KES">KES 🇰🇪</option>
-          <option value="TZS">TZS 🇹🇿</option>
-          <option value="RWF">RWF 🇷🇼</option>
-        </select>
-        <button id="fetchPackages">Load Packages</button>
-      </div>
+  <script>
+    const SUPABASE_URL = "https://blozicmqsebprsfmrwwe.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_Mm5kCbXvtuDhse-EtMzYKA_Wu3CSLZu";
 
-      <!-- Packages Display -->
-      <div id="packages" class="packages"></div>
-    </section>
+    // Sample countries data (should match SQL)
+    const countries = [
+      { code: "UG", name: "Uganda", flag: "🇺🇬" },
+      { code: "KE", name: "Kenya", flag: "🇰🇪" },
+      { code: "TZ", name: "Tanzania", flag: "🇹🇿" },
+      { code: "RW", name: "Rwanda", flag: "🇷🇼" }
+    ];
 
-    <!-- Wallet Section -->
-    <section id="wallet-section" class="hidden">
-      <h1>Wallet</h1>
-      <p>Your balance: <span id="wallet-balance">0</span></p>
-      <div id="wallet-transactions"></div>
-    </section>
+    const countrySelect = document.getElementById("countrySelect");
+    const packagesContainer = document.getElementById("packagesContainer");
 
-    <!-- Admin Section -->
-    <section id="admin-section" class="hidden">
-      <h1>Admin Panel</h1>
-      <label>
-        Currency Code:
-        <input type="text" id="admin-currency" placeholder="UGX">
-      </label>
-      <label>
-        New Rate:
-        <input type="number" id="admin-rate" placeholder="3600">
-      </label>
-      <label>
-        Admin Email:
-        <input type="email" id="admin-email" placeholder="you@example.com">
-      </label>
-      <label>
-        Admin Password:
-        <input type="password" id="admin-password" placeholder="••••••">
-      </label>
-      <button id="updateRateBtn">Update Rate</button>
-      <p id="admin-msg"></p>
-    </section>
-  </main>
-</div>
+    // Populate country dropdown
+    countries.forEach(c => {
+      const option = document.createElement("option");
+      option.value = c.code;
+      option.textContent = `${c.flag} ${c.name}`;
+      countrySelect.appendChild(option);
+    });
 
-<script>
-const packagesDiv = document.getElementById("packages");
-const fetchBtn = document.getElementById("fetchPackages");
-const currencySelect = document.getElementById("currency");
-let currentRate = 1;
+    async function loadPackages() {
+      const country = countrySelect.value;
+      if (!country) return alert("Please select a country!");
 
-// Provider Icons
-const providerIcons = {
-  "Basic": "https://cdn-icons-png.flaticon.com/512/190/190411.png",
-  "Standard": "https://cdn-icons-png.flaticon.com/512/190/190422.png",
-  "Premium": "https://cdn-icons-png.flaticon.com/512/190/190445.png"
-};
+      packagesContainer.innerHTML = "<p>Loading packages...</p>";
 
-// Section Navigation
-document.querySelectorAll(".sidebar a").forEach(link => {
-  link.addEventListener("click", e => {
-    e.preventDefault();
-    document.querySelectorAll(".sidebar a").forEach(l => l.classList.remove("active"));
-    link.classList.add("active");
-    document.querySelectorAll("main section").forEach(sec => sec.classList.add("hidden"));
-    const secId = link.dataset.section + "-section";
-    document.getElementById(secId).classList.remove("hidden");
-  });
-});
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/packages?country_code=eq.${country}`, {
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        const packages = await res.json();
 
-// Fetch Packages
-fetchBtn.addEventListener("click", async () => {
-  packagesDiv.innerHTML = "Loading...";
-  const currency = currencySelect.value;
+        if (!packages.length) {
+          packagesContainer.innerHTML = "<p>No packages available.</p>";
+          return;
+        }
 
-  try {
-    const res = await fetch(`https://YOUR_RENDER_BACKEND_URL/packages/${currency}`);
-    const data = await res.json();
+        packagesContainer.innerHTML = "";
+        packages.forEach(pkg => {
+          const div = document.createElement("div");
+          div.className = "card package";
+          div.innerHTML = `
+            <div class="flex">
+              <span class="flag">${countries.find(c => c.code === pkg.country_code).flag}</span>
+              <strong>${pkg.provider}</strong>
+            </div>
+            <h3>${pkg.name}</h3>
+            <p>${pkg.description}</p>
+            <div class="flex">
+              <label>Quantity:</label>
+              <input type="number" min="1" value="1" onchange="updatePrice(this, ${pkg.price_usd * pkg.profit_multiplier})">
+            </div>
+            <p>Total Price: <span class="price">${Math.ceil(pkg.price_usd * pkg.profit_multiplier)}</span></p>
+          `;
+          packagesContainer.appendChild(div);
+        });
 
-    if (data.error) {
-      packagesDiv.innerHTML = `<p class="error">${data.error}</p>`;
-      return;
+      } catch (err) {
+        packagesContainer.innerHTML = "<p>Error loading packages.</p>";
+        console.error(err);
+      }
     }
 
-    // Update current rate
-    const rateRes = await fetch(`https://YOUR_RENDER_BACKEND_URL/currency-rate/${currency}`);
-    const rateData = await rateRes.json();
-    currentRate = rateData.rate || 1;
-
-    // Render package cards
-    packagesDiv.innerHTML = data.map(pkg => `
-      <div class="package-card">
-        <h2>${pkg.name}</h2>
-        <p>
-          <strong>Provider:</strong>
-          <img src="${providerIcons[pkg.provider] || ''}" width="20" style="vertical-align:middle; margin-right:5px;">
-          ${pkg.provider}
-        </p>
-        <p>${pkg.description}</p>
-        <label>
-          Quantity: 
-          <input type="number" min="1" value="1" class="quantity-input" data-price="${pkg.price_usd}" data-multiplier="${pkg.profit_multiplier}" data-currency="${currency}">
-        </label>
-        <p><strong>Total Price:</strong> 
-          <span class="total-price">${Math.ceil(pkg.price_usd * pkg.profit_multiplier * currentRate)}</span> ${currency}</p>
-      </div>
-    `).join("");
-  } catch(err) {
-    packagesDiv.innerHTML = `<p class="error">Failed to fetch packages</p>`;
-  }
-});
-
-// Dynamic Price Calculation
-document.addEventListener("input", function(e){
-  if(e.target.classList.contains("quantity-input")){
-    const qty = e.target.value;
-    const basePrice = parseFloat(e.target.dataset.price);
-    const multiplier = parseFloat(e.target.dataset.multiplier);
-    const currency = e.target.dataset.currency;
-    const total = Math.ceil(basePrice * multiplier * qty * currentRate);
-    e.target.closest(".package-card").querySelector(".total-price").textContent = total;
-  }
-});
-
-// Admin Update Rate
-document.getElementById("updateRateBtn").addEventListener("click", async () => {
-  const currency_code = document.getElementById("admin-currency").value;
-  const rate = document.getElementById("admin-rate").value;
-  const email = document.getElementById("admin-email").value;
-  const password = document.getElementById("admin-password").value;
-  const msgEl = document.getElementById("admin-msg");
-
-  try {
-    const res = await fetch(`https://YOUR_RENDER_BACKEND_URL/admin/update-rate`, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ currency_code, rate, email, password })
-    });
-    const data = await res.json();
-    msgEl.textContent = data.message || data.error;
-  } catch(err){
-    msgEl.textContent = "Failed to update rate";
-  }
-});
-</script>
-
+    function updatePrice(input, basePrice) {
+      const container = input.closest(".package");
+      const priceEl = container.querySelector(".price");
+      const qty = parseInt(input.value);
+      priceEl.textContent = Math.ceil(basePrice * qty);
+    }
+  </script>
 </body>
-        </html>
+</html>
