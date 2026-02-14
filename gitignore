@@ -1,15 +1,9 @@
-# Node
 node_modules/
-npm-debug.log*
-
-# Logs
 logs
 *.log
-
-# Env files
 .env
 .env.*
 !.env.example
-
-# OS / temp
 .DS_Store
+dist/
+.cache/
