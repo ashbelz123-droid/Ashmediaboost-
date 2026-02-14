@@ -1,174 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AshMediaBoost Panel</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 20px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 15px 0;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-
-    select, input {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      background: #007bff;
-      color: #fff;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-      width: 95%;
-      font-size: 16px;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-
-    h2 {
-      margin-bottom: 10px;
-    }
-
-    .package {
-      margin-top: 15px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-
-    .package h3 {
-      margin: 5px 0;
-    }
-
-    .package p {
-      margin: 5px 0;
-    }
-
-    .flex {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
-    }
-
-    .flag {
-      font-size: 24px;
-    }
-
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AshMediaBoost Panel</title>
+<style>
+  body { font-family: Arial; background: #f0f2f5; margin:0; padding:20px; display:flex; flex-direction:column; align-items:center; }
+  h2{margin-bottom:10px;} p.country{margin-bottom:20px;font-weight:bold;}
+  .package-grid{display:flex; flex-wrap:wrap; justify-content:center; gap:15px; width:100%; max-width:900px;}
+  .card{background:#fff;border-radius:12px;padding:20px;width:260px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.1);display:flex;flex-direction:column;gap:10px;}
+  .card h3{margin:0;} .card .flag{font-size:24px;} .card .price{font-weight:bold;color:#007bff;font-size:18px;}
+  .card input{width:50px;padding:5px;border-radius:6px;border:1px solid #ccc;}
+  .card button{background:#007bff;color:#fff;border:none;padding:10px;border-radius:8px;cursor:pointer;margin-top:5px;}
+  .card button:hover{background:#0056b3;}
+  .package-type{font-size:14px;font-weight:bold;color:#555;}
+</style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>Welcome to AshMediaBoost</h2>
-    <select id="countrySelect">
-      <option value="">Select your country</option>
-    </select>
-    <button onclick="loadPackages()">Load Packages</button>
-  </div>
+<h2>AshMediaBoost Panel</h2>
+<p class="country" id="userCountryDisplay"></p>
+<div class="package-grid" id="packagesContainer"></div>
 
-  <div id="packagesContainer"></div>
+<h2>Wallet</h2>
+<p>Balance: <span id="walletBalance">0</span></p>
+<input type="number" id="topupAmount" placeholder="Amount">
+<select id="topupMethod">
+  <option value="mobile_money">Mobile Money</option>
+  <option value="pesapal">Pesapal</option>
+</select>
+<button onclick="topupWallet()">Top-up</button>
 
-  <script>
-    const SUPABASE_URL = "https://blozicmqsebprsfmrwwe.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_Mm5kCbXvtuDhse-EtMzYKA_Wu3CSLZu";
+<h3>Transactions</h3>
+<div id="transactions"></div>
 
-    // Sample countries data (should match SQL)
-    const countries = [
-      { code: "UG", name: "Uganda", flag: "🇺🇬" },
-      { code: "KE", name: "Kenya", flag: "🇰🇪" },
-      { code: "TZ", name: "Tanzania", flag: "🇹🇿" },
-      { code: "RW", name: "Rwanda", flag: "🇷🇼" }
-    ];
+<script>
+const SUPABASE_URL = "https://blozicmqsebprsfmrwwe.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Mm5kCbXvtuDhse-EtMzYKA_Wu3CSLZu";
 
-    const countrySelect = document.getElementById("countrySelect");
-    const packagesContainer = document.getElementById("packagesContainer");
+const countries = [
+  { code:"UG", name:"Uganda", flag:"🇺🇬" },
+  { code:"KE", name:"Kenya", flag:"🇰🇪" },
+  { code:"TZ", name:"Tanzania", flag:"🇹🇿" },
+  { code:"RW", name:"Rwanda", flag:"🇷🇼" }
+];
 
-    // Populate country dropdown
-    countries.forEach(c => {
-      const option = document.createElement("option");
-      option.value = c.code;
-      option.textContent = `${c.flag} ${c.name}`;
-      countrySelect.appendChild(option);
+const userCountry = localStorage.getItem("userCountry") || "UG";
+document.getElementById("userCountryDisplay").textContent = 
+  `${countries.find(c=>c.code===userCountry).flag} ${countries.find(c=>c.code===userCountry).name}`;
+
+const packagesContainer = document.getElementById("packagesContainer");
+
+async function loadPackages() {
+  packagesContainer.innerHTML="<p>Loading packages...</p>";
+  try{
+    const rateRes = await fetch(`${SUPABASE_URL}/rest/v1/currency_rates?currency_code=eq.${userCountry}`, {
+      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
     });
+    const rateData = await rateRes.json();
+    const rate = rateData.length ? rateData[0].rate : 1;
 
-    async function loadPackages() {
-      const country = countrySelect.value;
-      if (!country) return alert("Please select a country!");
+    const pkgRes = await fetch(`${SUPABASE_URL}/rest/v1/packages?select=*,providers(*)`, {
+      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+    });
+    const packages = await pkgRes.json();
 
-      packagesContainer.innerHTML = "<p>Loading packages...</p>";
+    packagesContainer.innerHTML="";
+    packages.forEach(pkg=>{
+      const div=document.createElement("div"); div.className="card";
+      const localPrice=Math.ceil(pkg.price_usd*pkg.profit_multiplier*rate);
+      div.innerHTML=`
+        <div class="flex"><span class="flag">🌐</span> <span class="package-type">${pkg.type||"Standard"}</span></div>
+        <h3>${pkg.name}</h3>
+        <p>${pkg.description}</p>
+        <div class="flex">
+          <label>Qty:</label>
+          <input type="number" min="1" value="1" onchange="updatePrice(this, ${localPrice})">
+        </div>
+        <p>Total Price: <span class="price">${localPrice}</span></p>
+        <button onclick="buyPackage(${pkg.id}, this.previousElementSibling.querySelector('input').value)">Buy</button>
+      `;
+      packagesContainer.appendChild(div);
+    });
+  }catch(err){
+    packagesContainer.innerHTML="<p>Error loading packages.</p>";
+    console.error(err);
+  }
+}
 
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/packages?country_code=eq.${country}`, {
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`
-          }
-        });
-        const packages = await res.json();
+function updatePrice(input, unitPrice){
+  const priceElem=input.closest('.card').querySelector('.price');
+  priceElem.textContent=Math.ceil(unitPrice*input.value);
+}
 
-        if (!packages.length) {
-          packagesContainer.innerHTML = "<p>No packages available.</p>";
-          return;
-        }
+async function buyPackage(pkgId, qty){
+  const user = JSON.parse(localStorage.getItem("user"));
+  if(!user) return alert("Login required!");
+  const price = parseInt(document.querySelector('.price').textContent);
+  await fetch("/wallet/pay", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({userId:user.id, packageId:pkgId, qty, price}) });
+  alert(`You purchased ${qty} of package ID ${pkgId}`);
+  loadWallet();
+}
 
-        packagesContainer.innerHTML = "";
-        packages.forEach(pkg => {
-          const div = document.createElement("div");
-          div.className = "card package";
-          div.innerHTML = `
-            <div class="flex">
-              <span class="flag">${countries.find(c => c.code === pkg.country_code).flag}</span>
-              <strong>${pkg.provider}</strong>
-            </div>
-            <h3>${pkg.name}</h3>
-            <p>${pkg.description}</p>
-            <div class="flex">
-              <label>Quantity:</label>
-              <input type="number" min="1" value="1" onchange="updatePrice(this, ${pkg.price_usd * pkg.profit_multiplier})">
-            </div>
-            <p>Total Price: <span class="price">${Math.ceil(pkg.price_usd * pkg.profit_multiplier)}</span></p>
-          `;
-          packagesContainer.appendChild(div);
-        });
+// Wallet
+async function loadWallet(){
+  const user = JSON.parse(localStorage.getItem("user"));
+  if(!user) return;
+  const res = await fetch(`/wallet/${user.id}`);
+  const data = await res.json();
+  document.getElementById("walletBalance").textContent = data.balance;
+  const container = document.getElementById("transactions");
+  container.innerHTML="";
+  data.transactions.forEach(tx=>{
+    const div=document.createElement("div");
+    div.textContent=`${tx.method}: ${tx.amount} at ${new Date(tx.created_at).toLocaleString()}`;
+    container.appendChild(div);
+  });
+}
 
-      } catch (err) {
-        packagesContainer.innerHTML = "<p>Error loading packages.</p>";
-        console.error(err);
-      }
-    }
+async function topupWallet(){
+  const user = JSON.parse(localStorage.getItem("user"));
+  const amount=document.getElementById("topupAmount").value;
+  const method=document.getElementById("topupMethod").value;
+  const res=await fetch("/wallet/topup", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({userId:user.id, amount, method}) });
+  const data=await res.json();
+  alert(data.message);
+  loadWallet();
+}
 
-    function updatePrice(input, basePrice) {
-      const container = input.closest(".package");
-      const priceEl = container.querySelector(".price");
-      const qty = parseInt(input.value);
-      priceEl.textContent = Math.ceil(basePrice * qty);
-    }
-  </script>
+window.onload=()=>{ loadPackages(); loadWallet(); };
+</script>
+
 </body>
 </html>
