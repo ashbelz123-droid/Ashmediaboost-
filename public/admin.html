@@ -1,37 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - Ashmediaboost</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - AshMediaBoost</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <h1>Admin Panel</h1>
-</header>
-<main>
-  <h2>Update Exchange Rate</h2>
-  <form id="currencyForm">
-    <input type="text" id="currency_code" placeholder="Currency code (USD,UGX)" required>
-    <input type="number" id="rate" placeholder="Rate" required step="0.01">
-    <button type="submit">Update Rate</button>
-  </form>
-  <p id="msg"></p>
-</main>
-<script>
-document.getElementById('currencyForm').onsubmit = async e => {
-  e.preventDefault();
-  const code = document.getElementById('currency_code').value;
-  const rate = parseFloat(document.getElementById('rate').value);
-  const res = await fetch('/admin/currency', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({currency_code: code, rate})
-  });
-  const data = await res.json();
-  document.getElementById('msg').textContent = data.message || data.error;
-};
-</script>
+  <div class="container">
+    <h1>Admin Panel</h1>
+    <h2>Update Currency Rate</h2>
+
+    <input type="text" id="currency-code" placeholder="Currency Code (e.g., UGX)">
+    <input type="number" id="currency-rate" placeholder="New Rate">
+    <input type="email" id="admin-email" placeholder="Admin Email">
+    <input type="password" id="admin-password" placeholder="Admin Password">
+    <button id="update-rate-btn">Update Rate</button>
+
+    <div id="message"></div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
