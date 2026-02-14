@@ -80,6 +80,8 @@ app.post("/admin/update-rate", async (req, res) => {
   res.json({ message: "Rate updated successfully" });
 });
 
-app.listen(process.env.PORT || 10000, () => {
-  console.log("Server running on port 10000");
+const PORT = process.env.PORT || 10000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
