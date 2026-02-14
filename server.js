@@ -1,56 +1,41 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-app.use(bodyParser.json());const path = require('path');
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Supabase client
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-// -------------------------
-// Helpers
-// -------------------------
-async function getCountries() {
-  const { data, error } = await supabase.from('countries').select('*');
-  if (error) console.error(error);
-  return data;
-}
+// Import models
+const User = require('./models/user');
+const Provider = require('./models/provider');
+const Package = require('./models/package');
+const Order = require('./models/order');
+const Wallet = require('./models/wallet');
+const Currency = require('./models/currency');
 
-async function getPackages() {
-  const { data, error } = await supabase.from('packages').select('*, providers(*)');
-  if (error) console.error(error);
-  return data;
-}
+// -------------------------
+// Frontend
+// -------------------------
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public/admin.html')));
 
 // -------------------------
 // Wallet Top-up
 // -------------------------
 app.post('/wallet/topup', async (req, res) => {
   const { user_id, amount } = req.body;
-  if (amount < Number(process.env.MIN_TOPUP_AMOUNT)) {
+  if (amount < Number(process.env.MIN_TOPUP_AMOUNT))
     return res.status(400).json({ error: `Minimum top-up is ${process.env.MIN_TOPUP_AMOUNT}` });
-  }
 
-  const { data: wallet, error } = await supabase
-    .from('users')
-    .update({ wallet_balance: supabase.rpc('sum', { x: amount }) })
-    .eq('id', user_id)
-    .select();
+  const { data: wallet, error } = await User.updateWallet(user_id, amount);
   if (error) return res.status(500).json({ error });
 
-  await supabase.from('wallet_transactions').insert({
-    user_id,
-    amount,
-    transaction_type: 'topup'
-  });
-
+  await Wallet.addTransaction({ user_id, amount, transaction_type: 'topup' });
   res.json({ message: 'Wallet topped up', wallet_balance: wallet[0].wallet_balance });
 });
 
@@ -59,58 +44,48 @@ app.post('/wallet/topup', async (req, res) => {
 // -------------------------
 app.post('/orders', async (req, res) => {
   const { user_id, package_id, quantity } = req.body;
+  try {
+    const pkg = await Package.findById(package_id);
+    const user = await User.findById(user_id);
 
-  const { data: pkg, error: pkgError } = await supabase
-    .from('packages')
-    .select('*')
-    .eq('id', package_id)
-    .single();
-  if (pkgError) return res.status(500).json({ error: pkgError });
+    const exchange = await Currency.getRate(pkg.price_usd_currency || 'USD'); // dynamic
+    const totalPriceLocal = pkg.price_usd * pkg.profit_multiplier * exchange.rate * quantity;
 
-  const totalPrice = pkg.price_usd * quantity * pkg.profit_multiplier;
+    if (user.wallet_balance < totalPriceLocal)
+      return res.status(400).json({ error: 'Insufficient wallet balance' });
 
-  const { data: user, error: userError } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', user_id)
-    .single();
-  if (userError) return res.status(500).json({ error: userError });
+    await User.updateWallet(user_id, user.wallet_balance - totalPriceLocal);
+    const order = await Order.create({ user_id, package_id, quantity, price_local: totalPriceLocal, status: 'pending' });
+    await Wallet.addTransaction({ user_id, amount: totalPriceLocal, transaction_type: 'order', related_order_id: order.id });
 
-  if (user.wallet_balance < totalPrice) {
-    return res.status(400).json({ error: 'Insufficient wallet balance' });
+    res.json({ message: 'Order created', order });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Order failed' });
   }
-
-  await supabase
-    .from('users')
-    .update({ wallet_balance: user.wallet_balance - totalPrice })
-    .eq('id', user_id);
-
-  const { data: order, error: orderError } = await supabase.from('orders').insert({
-    user_id,
-    package_id,
-    quantity,
-    price_local: totalPrice,
-    status: 'pending'
-  }).select().single();
-  if (orderError) return res.status(500).json({ error: orderError });
-
-  await supabase.from('wallet_transactions').insert({
-    user_id,
-    amount: totalPrice,
-    transaction_type: 'order',
-    related_order_id: order.id
-  });
-
-  res.json({ message: 'Order created', order });
 });
 
 // -------------------------
-// Frontend Data
+// Admin Update Currency
+// -------------------------
+app.post('/admin/currency', async (req, res) => {
+  const { currency_code, rate } = req.body;
+  try {
+    await Currency.updateRate(currency_code, rate);
+    res.json({ message: 'Currency rate updated' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update rate' });
+  }
+});
+
+// -------------------------
+// Data for Frontend
 // -------------------------
 app.get('/data', async (req, res) => {
-  const countries = await getCountries();
-  const packages = await getPackages();
-  res.json({ countries, packages });
+  const countries = await supabase.from('countries').select('*');
+  const packages = await Package.all();
+  res.json({ countries: countries.data, packages: packages.data });
 });
 
 // -------------------------
