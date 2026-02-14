@@ -1,218 +1,129 @@
 // server.js
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
+const bodyParser = require('body-parser');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.use(bodyParser.json());
 
-app.use(cors());
-app.use(express.json());
+// Supabase client
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-// ---------------------------
-// Supabase Connection
-// ---------------------------
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
+// -------------------------
+// Helper Functions
+// -------------------------
 
-// ---------------------------
-// Constants
-// ---------------------------
-const MIN_TOPUP_UGX = 500;
-
-// ---------------------------
-// Helper: Convert UGX to Local Currency
-// ---------------------------
-async function convertToLocal(amountUGX, currency_code) {
-  const { data, error } = await supabase
-    .from('currency_rates')
-    .select('rate_to_usd')
-    .eq('currency_code', currency_code)
-    .single();
-
-  if (error) throw error;
-  const rateUSD = data.rate_to_usd;
-  return amountUGX * rateUSD / 0.00027; // adjust UGX rate reference
+async function getCountries() {
+  const { data, error } = await supabase.from('countries').select('*');
+  if (error) console.error(error);
+  return data;
 }
 
-// ---------------------------
-// ROUTE: Top-up Wallet (Pesapal placeholder)
-// ---------------------------
+async function getMobileMoney(country_id) {
+  const { data, error } = await supabase
+    .from('mobile_money')
+    .select('*')
+    .eq('country_id', country_id);
+  if (error) console.error(error);
+  return data;
+}
+
+async function getPackages() {
+  const { data, error } = await supabase.from('packages').select('*, providers(*)');
+  if (error) console.error(error);
+  return data;
+}
+
+// -------------------------
+// Wallet Top-up
+// -------------------------
 app.post('/wallet/topup', async (req, res) => {
-  try {
-    const { user_id, amount_ugx } = req.body;
-    if (amount_ugx < MIN_TOPUP_UGX)
-      return res.status(400).json({ error: `Minimum top-up is ${MIN_TOPUP_UGX} UGX` });
-
-    // Record top-up
-    const { data, error } = await supabase.from('wallet_transactions').insert([{
-      user_id,
-      amount: amount_ugx,
-      transaction_type: 'topup',
-    }]);
-    if (error) throw error;
-
-    // Update wallet
-    const { error: updateErr } = await supabase
-      .from('users')
-      .update({ wallet_balance: supabase.raw('wallet_balance + ?', [amount_ugx]) })
-      .eq('id', user_id);
-    if (updateErr) throw updateErr;
-
-    res.json({ message: 'Wallet topped up successfully', transaction: data[0] });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  const { user_id, amount } = req.body;
+  if (amount < Number(process.env.MIN_TOPUP_AMOUNT)) {
+    return res.status(400).json({ error: `Minimum top-up is ${process.env.MIN_TOPUP_AMOUNT}` });
   }
+
+  const { data: wallet, error } = await supabase
+    .from('users')
+    .update({ wallet_balance: supabase.rpc('sum', { x: amount }) })
+    .eq('id', user_id)
+    .select();
+  if (error) return res.status(500).json({ error });
+
+  await supabase.from('wallet_transactions').insert({
+    user_id,
+    amount,
+    transaction_type: 'topup'
+  });
+
+  res.json({ message: 'Wallet topped up', wallet_balance: wallet[0].wallet_balance });
 });
 
-// ---------------------------
-// ROUTE: Create Order
-// ---------------------------
+// -------------------------
+// Create Order
+// -------------------------
 app.post('/orders', async (req, res) => {
-  try {
-    const { user_id, package_id, quantity } = req.body;
+  const { user_id, package_id, quantity } = req.body;
 
-    // Get user
-    const { data: user, error: userErr } = await supabase
-      .from('users').select('*').eq('id', user_id).single();
-    if (userErr) throw userErr;
+  // Fetch package price and auto-refill
+  const { data: pkg, error: pkgError } = await supabase
+    .from('packages')
+    .select('*')
+    .eq('id', package_id)
+    .single();
+  if (pkgError) return res.status(500).json({ error: pkgError });
 
-    // Get package
-    const { data: pkg, error: pkgErr } = await supabase
-      .from('packages').select('*').eq('id', package_id).single();
-    if (pkgErr) throw pkgErr;
+  const totalPrice = pkg.price_usd * quantity * pkg.profit_multiplier;
 
-    const totalPrice = pkg.price_usd * pkg.profit_multiplier * quantity;
+  // Fetch user wallet
+  const { data: user, error: userError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user_id)
+    .single();
+  if (userError) return res.status(500).json({ error: userError });
 
-    if (user.wallet_balance < totalPrice)
-      return res.status(400).json({ error: 'Insufficient wallet balance' });
-
-    // Deduct wallet
-    const { error: deductErr } = await supabase
-      .from('users')
-      .update({ wallet_balance: user.wallet_balance - totalPrice })
-      .eq('id', user_id);
-    if (deductErr) throw deductErr;
-
-    // Create order
-    const { data: order, error: orderErr } = await supabase
-      .from('orders')
-      .insert([{
-        user_id,
-        package_id,
-        quantity,
-        price_local: totalPrice,
-        status: 'pending'
-      }])
-      .select().single();
-    if (orderErr) throw orderErr;
-
-    // Auto-refill placeholder
-    if (pkg.auto_refill) {
-      console.log(`Order ${order.id} auto-refill enabled`);
-      // Add auto-refill scheduling logic here
-    }
-
-    res.json({ message: 'Order created', order });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  if (user.wallet_balance < totalPrice) {
+    return res.status(400).json({ error: 'Insufficient wallet balance' });
   }
+
+  // Deduct wallet balance
+  await supabase
+    .from('users')
+    .update({ wallet_balance: user.wallet_balance - totalPrice })
+    .eq('id', user_id);
+
+  // Create order
+  const { data: order, error: orderError } = await supabase.from('orders').insert({
+    user_id,
+    package_id,
+    quantity,
+    price_local: totalPrice,
+    status: 'pending'
+  }).select().single();
+  if (orderError) return res.status(500).json({ error: orderError });
+
+  // Wallet transaction log
+  await supabase.from('wallet_transactions').insert({
+    user_id,
+    amount: totalPrice,
+    transaction_type: 'order',
+    related_order_id: order.id
+  });
+
+  res.json({ message: 'Order created', order });
 });
 
-// ---------------------------
-// ROUTE: Refund Wallet (Failed Order)
-// ---------------------------
-app.post('/orders/refund', async (req, res) => {
-  try {
-    const { order_id } = req.body;
-
-    const { data: order, error: orderErr } = await supabase
-      .from('orders').select('*').eq('id', order_id).single();
-    if (orderErr) throw orderErr;
-
-    if (order.status !== 'failed')
-      return res.status(400).json({ error: 'Order is not failed' });
-
-    // Refund wallet
-    const { error: refundErr } = await supabase
-      .from('users')
-      .update({ wallet_balance: supabase.raw('wallet_balance + ?', [order.price_local]) })
-      .eq('id', order.user_id);
-    if (refundErr) throw refundErr;
-
-    // Record refund transaction
-    const { error: txnErr } = await supabase
-      .from('wallet_transactions')
-      .insert([{
-        user_id: order.user_id,
-        amount: order.price_local,
-        transaction_type: 'refund',
-        related_order_id: order_id
-      }]);
-    if (txnErr) throw txnErr;
-
-    res.json({ message: 'Wallet refunded successfully' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// -------------------------
+// Fetch Data for Frontend
+// -------------------------
+app.get('/data', async (req, res) => {
+  const countries = await getCountries();
+  const packages = await getPackages();
+  res.json({ countries, packages });
 });
 
-// ---------------------------
-// ROUTE: Get Packages
-// ---------------------------
-app.get('/packages', async (req, res) => {
-  try {
-    const { data, error } = await supabase.from('packages').select('*');
-    if (error) throw error;
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ---------------------------
-// ROUTE: Get Countries
-// ---------------------------
-app.get('/countries', async (req, res) => {
-  try {
-    const { data, error } = await supabase.from('countries').select('*');
-    if (error) throw error;
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ---------------------------
-// ROUTE: Get Mobile Money Providers
-// ---------------------------
-app.get('/mobile-money', async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('mobile_money')
-      .select(`
-        id,
-        display_name,
-        icon_color,
-        country:country_id (
-          country_name,
-          flag_icon_url,
-          currency_code
-        )
-      `);
-    if (error) throw error;
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ---------------------------
-// Start Server
-// ---------------------------
-app.listen(PORT, () => {
-  console.log(`🔥 Server running on port ${PORT}`);
-});
+// -------------------------
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
