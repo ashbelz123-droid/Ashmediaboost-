@@ -1,93 +1,96 @@
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const path = require('path');
-const { createClient } = require('@supabase/supabase-js');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors());
+app.use(express.json());
+app.use(express.static("public"));
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-// Import models
-const User = require('./models/user');
-const Provider = require('./models/provider');
-const Package = require('./models/package');
-const Order = require('./models/order');
-const Wallet = require('./models/wallet');
-const Currency = require('./models/currency');
+// =========================
+// AUTH REGISTER
+// =========================
+app.post("/register", async (req, res) => {
+  const { username, email, password, country_code } = req.body;
 
-// -------------------------
-// Frontend
-// -------------------------
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public/admin.html')));
+  const hashed = await bcrypt.hash(password, 10);
 
-// -------------------------
-// Wallet Top-up
-// -------------------------
-app.post('/wallet/topup', async (req, res) => {
-  const { user_id, amount } = req.body;
-  if (amount < Number(process.env.MIN_TOPUP_AMOUNT))
-    return res.status(400).json({ error: `Minimum top-up is ${process.env.MIN_TOPUP_AMOUNT}` });
+  const { data, error } = await supabase
+    .from("users")
+    .insert([{ username, email, password: hashed, country_code }]);
 
-  const { data: wallet, error } = await User.updateWallet(user_id, amount);
-  if (error) return res.status(500).json({ error });
+  if (error) return res.status(400).json({ error: error.message });
 
-  await Wallet.addTransaction({ user_id, amount, transaction_type: 'topup' });
-  res.json({ message: 'Wallet topped up', wallet_balance: wallet[0].wallet_balance });
+  res.json({ message: "User registered successfully" });
 });
 
-// -------------------------
-// Create Order
-// -------------------------
-app.post('/orders', async (req, res) => {
-  const { user_id, package_id, quantity } = req.body;
-  try {
-    const pkg = await Package.findById(package_id);
-    const user = await User.findById(user_id);
+// =========================
+// LOGIN
+// =========================
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
 
-    const exchange = await Currency.getRate(pkg.price_usd_currency || 'USD'); // dynamic
-    const totalPriceLocal = pkg.price_usd * pkg.profit_multiplier * exchange.rate * quantity;
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", email)
+    .single();
 
-    if (user.wallet_balance < totalPriceLocal)
-      return res.status(400).json({ error: 'Insufficient wallet balance' });
+  if (error || !data)
+    return res.status(400).json({ error: "Invalid credentials" });
 
-    await User.updateWallet(user_id, user.wallet_balance - totalPriceLocal);
-    const order = await Order.create({ user_id, package_id, quantity, price_local: totalPriceLocal, status: 'pending' });
-    await Wallet.addTransaction({ user_id, amount: totalPriceLocal, transaction_type: 'order', related_order_id: order.id });
+  const match = await bcrypt.compare(password, data.password);
+  if (!match)
+    return res.status(400).json({ error: "Invalid credentials" });
 
-    res.json({ message: 'Order created', order });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Order failed' });
+  const token = jwt.sign({ id: data.id }, process.env.JWT_SECRET);
+  res.json({ token });
+});
+
+// =========================
+// GET PACKAGES
+// =========================
+app.get("/packages", async (req, res) => {
+  const { data, error } = await supabase
+    .from("packages")
+    .select("*, providers(display_name)");
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.json(data);
+});
+
+// =========================
+// ADMIN UPDATE CURRENCY
+// =========================
+app.post("/admin/update-rate", async (req, res) => {
+  const { currency_code, rate, admin_email, admin_password } = req.body;
+
+  if (
+    admin_email !== process.env.ADMIN_EMAIL ||
+    admin_password !== process.env.ADMIN_PASSWORD
+  ) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
+
+  const { error } = await supabase
+    .from("currency_rates")
+    .update({ rate, updated_at: new Date() })
+    .eq("currency_code", currency_code);
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.json({ message: "Currency updated successfully" });
 });
 
-// -------------------------
-// Admin Update Currency
-// -------------------------
-app.post('/admin/currency', async (req, res) => {
-  const { currency_code, rate } = req.body;
-  try {
-    await Currency.updateRate(currency_code, rate);
-    res.json({ message: 'Currency rate updated' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to update rate' });
-  }
+app.listen(process.env.PORT, () => {
+  console.log("Server running...");
 });
-
-// -------------------------
-// Data for Frontend
-// -------------------------
-app.get('/data', async (req, res) => {
-  const countries = await supabase.from('countries').select('*');
-  const packages = await Package.all();
-  res.json({ countries: countries.data, packages: packages.data });
-});
-
-// -------------------------
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
