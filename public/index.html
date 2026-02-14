@@ -3,71 +3,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AshMediaBoost Packages</title>
+  <title>AshMediaBoost Panel</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>AshMediaBoost Packages</h1>
 
-    <!-- Currency Selection -->
-    <div class="currency-select">
-      <label for="currency">Select Currency:</label>
-      <select id="currency">
-        <option value="USD">USD 🇺🇸</option>
-        <option value="UGX">UGX 🇺🇬</option>
-        <option value="KES">KES 🇰🇪</option>
-      </select>
-      <button id="fetchPackages">Load Packages</button>
-    </div>
+<div class="dashboard">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>AshMediaBoost</h2>
+    <nav>
+      <ul>
+        <li><a href="#" class="active" data-section="packages">Packages</a></li>
+        <li><a href="#" data-section="wallet">Wallet</a></li>
+        <li><a href="#" data-section="admin">Admin</a></li>
+      </ul>
+    </nav>
+  </aside>
 
-    <!-- Packages Display -->
-    <div id="packages" class="packages"></div>
-  </div>
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Packages Section -->
+    <section id="packages-section">
+      <h1>Packages</h1>
 
-  <script>
-    const packagesDiv = document.getElementById("packages");
-    const fetchBtn = document.getElementById("fetchPackages");
-    const currencySelect = document.getElementById("currency");
+      <!-- Currency Selector -->
+      <div class="currency-select">
+        <label for="currency">Select Currency:</label>
+        <select id="currency">
+          <option value="USD">USD 🇺🇸</option>
+          <option value="UGX">UGX 🇺🇬</option>
+          <option value="KES">KES 🇰🇪</option>
+          <option value="TZS">TZS 🇹🇿</option>
+          <option value="RWF">RWF 🇷🇼</option>
+        </select>
+        <button id="fetchPackages">Load Packages</button>
+      </div>
 
-    // Map providers to icons
-    const providerIcons = {
-      "Basic": "https://cdn-icons-png.flaticon.com/512/190/190411.png",
-      "Standard": "https://cdn-icons-png.flaticon.com/512/190/190422.png",
-      "Premium": "https://cdn-icons-png.flaticon.com/512/190/190445.png"
-    };
+      <!-- Packages Display -->
+      <div id="packages" class="packages"></div>
+    </section>
 
-    // Fetch packages
-    fetchBtn.addEventListener("click", async () => {
-      packagesDiv.innerHTML = "Loading...";
-      const currency = currencySelect.value;
+    <!-- Wallet Section -->
+    <section id="wallet-section" class="hidden">
+      <h1>Wallet</h1>
+      <p>Your balance: <span id="wallet-balance">0</span></p>
+      <div id="wallet-transactions"></div>
+    </section>
 
-      try {
-        const res = await fetch(`https://your-render-backend-url/packages/${currency}`);
-        const data = await res.json();
+    <!-- Admin Section -->
+    <section id="admin-section" class="hidden">
+      <h1>Admin Panel</h1>
+      <label>
+        Currency Code:
+        <input type="text" id="admin-currency" placeholder="UGX">
+      </label>
+      <label>
+        New Rate:
+        <input type="number" id="admin-rate" placeholder="3600">
+      </label>
+      <label>
+        Admin Email:
+        <input type="email" id="admin-email" placeholder="you@example.com">
+      </label>
+      <label>
+        Admin Password:
+        <input type="password" id="admin-password" placeholder="••••••">
+      </label>
+      <button id="updateRateBtn">Update Rate</button>
+      <p id="admin-msg"></p>
+    </section>
+  </main>
+</div>
 
-        if (data.error) {
-          packagesDiv.innerHTML = `<p class="error">${data.error}</p>`;
-          return;
-        }
+<script>
+const packagesDiv = document.getElementById("packages");
+const fetchBtn = document.getElementById("fetchPackages");
+const currencySelect = document.getElementById("currency");
+let currentRate = 1;
 
-        // Render package cards
-        packagesDiv.innerHTML = data.map(pkg => `
-          <div class="package-card">
-            <h2>${pkg.name}</h2>
-            <p>
-              <strong>Provider:</strong> 
-              <img src="${providerIcons[pkg.provider] || ''}" alt="${pkg.provider}" width="20" style="vertical-align:middle; margin-right:5px;">
-              ${pkg.provider}
-            </p>
-            <p>${pkg.description}</p>
-            <p><strong>Price:</strong> ${pkg.local_price} ${pkg.currency}</p>
-          </div>
-        `).join("");
-      } catch (err) {
-        packagesDiv.innerHTML = `<p class="error">Failed to fetch packages</p>`;
-      }
+// Provider Icons
+const providerIcons = {
+  "Basic": "https://cdn-icons-png.flaticon.com/512/190/190411.png",
+  "Standard": "https://cdn-icons-png.flaticon.com/512/190/190422.png",
+  "Premium": "https://cdn-icons-png.flaticon.com/512/190/190445.png"
+};
+
+// Section Navigation
+document.querySelectorAll(".sidebar a").forEach(link => {
+  link.addEventListener("click", e => {
+    e.preventDefault();
+    document.querySelectorAll(".sidebar a").forEach(l => l.classList.remove("active"));
+    link.classList.add("active");
+    document.querySelectorAll("main section").forEach(sec => sec.classList.add("hidden"));
+    const secId = link.dataset.section + "-section";
+    document.getElementById(secId).classList.remove("hidden");
+  });
+});
+
+// Fetch Packages
+fetchBtn.addEventListener("click", async () => {
+  packagesDiv.innerHTML = "Loading...";
+  const currency = currencySelect.value;
+
+  try {
+    const res = await fetch(`https://YOUR_RENDER_BACKEND_URL/packages/${currency}`);
+    const data = await res.json();
+
+    if (data.error) {
+      packagesDiv.innerHTML = `<p class="error">${data.error}</p>`;
+      return;
+    }
+
+    // Update current rate
+    const rateRes = await fetch(`https://YOUR_RENDER_BACKEND_URL/currency-rate/${currency}`);
+    const rateData = await rateRes.json();
+    currentRate = rateData.rate || 1;
+
+    // Render package cards
+    packagesDiv.innerHTML = data.map(pkg => `
+      <div class="package-card">
+        <h2>${pkg.name}</h2>
+        <p>
+          <strong>Provider:</strong>
+          <img src="${providerIcons[pkg.provider] || ''}" width="20" style="vertical-align:middle; margin-right:5px;">
+          ${pkg.provider}
+        </p>
+        <p>${pkg.description}</p>
+        <label>
+          Quantity: 
+          <input type="number" min="1" value="1" class="quantity-input" data-price="${pkg.price_usd}" data-multiplier="${pkg.profit_multiplier}" data-currency="${currency}">
+        </label>
+        <p><strong>Total Price:</strong> 
+          <span class="total-price">${Math.ceil(pkg.price_usd * pkg.profit_multiplier * currentRate)}</span> ${currency}</p>
+      </div>
+    `).join("");
+  } catch(err) {
+    packagesDiv.innerHTML = `<p class="error">Failed to fetch packages</p>`;
+  }
+});
+
+// Dynamic Price Calculation
+document.addEventListener("input", function(e){
+  if(e.target.classList.contains("quantity-input")){
+    const qty = e.target.value;
+    const basePrice = parseFloat(e.target.dataset.price);
+    const multiplier = parseFloat(e.target.dataset.multiplier);
+    const currency = e.target.dataset.currency;
+    const total = Math.ceil(basePrice * multiplier * qty * currentRate);
+    e.target.closest(".package-card").querySelector(".total-price").textContent = total;
+  }
+});
+
+// Admin Update Rate
+document.getElementById("updateRateBtn").addEventListener("click", async () => {
+  const currency_code = document.getElementById("admin-currency").value;
+  const rate = document.getElementById("admin-rate").value;
+  const email = document.getElementById("admin-email").value;
+  const password = document.getElementById("admin-password").value;
+  const msgEl = document.getElementById("admin-msg");
+
+  try {
+    const res = await fetch(`https://YOUR_RENDER_BACKEND_URL/admin/update-rate`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ currency_code, rate, email, password })
     });
-  </script>
+    const data = await res.json();
+    msgEl.textContent = data.message || data.error;
+  } catch(err){
+    msgEl.textContent = "Failed to update rate";
+  }
+});
+</script>
+
 </body>
-</html>
+      </html>
