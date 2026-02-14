@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AshMediaBoost</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AshMediaBoost</title>
   <style>
     body {
-      font-family: Arial;
       background: #0f172a;
       color: white;
+      font-family: Arial;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -24,40 +24,55 @@
       width: 90%;
       max-width: 350px;
     }
-    button {
+    select, button {
       padding: 10px;
-      border: none;
+      margin-top: 10px;
       border-radius: 8px;
+      border: none;
+    }
+    button {
       background: #22c55e;
       color: white;
-      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
-  <h1>AshMediaBoost</h1>
-  <div id="packages"></div>
+<h1>AshMediaBoost</h1>
 
-  <script>
-    fetch("/packages")
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById("packages");
-        data.forEach(pkg => {
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `
-            <h3>${pkg.name}</h3>
-            <p>${pkg.description}</p>
-            <p>Provider: ${pkg.providers.display_name}</p>
-            <p>Price: $${pkg.price_usd}</p>
-            <button>Order Now</button>
-          `;
-          container.appendChild(div);
-        });
+<select id="currency">
+  <option value="UGX">Uganda (UGX)</option>
+  <option value="KES">Kenya (KES)</option>
+  <option value="TZS">Tanzania (TZS)</option>
+</select>
+
+<button onclick="loadPackages()">Load Packages</button>
+
+<div id="packages"></div>
+
+<script>
+function loadPackages() {
+  const currency = document.getElementById("currency").value;
+
+  fetch("/packages/" + currency)
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById("packages");
+      container.innerHTML = "";
+
+      data.forEach(pkg => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <h3>${pkg.name}</h3>
+          <p>${pkg.description}</p>
+          <p><strong>${pkg.local_price} ${pkg.currency}</strong></p>
+        `;
+        container.appendChild(div);
       });
-  </script>
+    });
+}
+</script>
 
 </body>
 </html>
