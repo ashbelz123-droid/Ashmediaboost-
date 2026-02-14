@@ -1,4 +1,3 @@
-// server.js
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -11,20 +10,10 @@ app.use(bodyParser.json());
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 // -------------------------
-// Helper Functions
+// Helpers
 // -------------------------
-
 async function getCountries() {
   const { data, error } = await supabase.from('countries').select('*');
-  if (error) console.error(error);
-  return data;
-}
-
-async function getMobileMoney(country_id) {
-  const { data, error } = await supabase
-    .from('mobile_money')
-    .select('*')
-    .eq('country_id', country_id);
   if (error) console.error(error);
   return data;
 }
@@ -66,7 +55,6 @@ app.post('/wallet/topup', async (req, res) => {
 app.post('/orders', async (req, res) => {
   const { user_id, package_id, quantity } = req.body;
 
-  // Fetch package price and auto-refill
   const { data: pkg, error: pkgError } = await supabase
     .from('packages')
     .select('*')
@@ -76,7 +64,6 @@ app.post('/orders', async (req, res) => {
 
   const totalPrice = pkg.price_usd * quantity * pkg.profit_multiplier;
 
-  // Fetch user wallet
   const { data: user, error: userError } = await supabase
     .from('users')
     .select('*')
@@ -88,13 +75,11 @@ app.post('/orders', async (req, res) => {
     return res.status(400).json({ error: 'Insufficient wallet balance' });
   }
 
-  // Deduct wallet balance
   await supabase
     .from('users')
     .update({ wallet_balance: user.wallet_balance - totalPrice })
     .eq('id', user_id);
 
-  // Create order
   const { data: order, error: orderError } = await supabase.from('orders').insert({
     user_id,
     package_id,
@@ -104,7 +89,6 @@ app.post('/orders', async (req, res) => {
   }).select().single();
   if (orderError) return res.status(500).json({ error: orderError });
 
-  // Wallet transaction log
   await supabase.from('wallet_transactions').insert({
     user_id,
     amount: totalPrice,
@@ -116,7 +100,7 @@ app.post('/orders', async (req, res) => {
 });
 
 // -------------------------
-// Fetch Data for Frontend
+// Frontend Data
 // -------------------------
 app.get('/data', async (req, res) => {
   const countries = await getCountries();
