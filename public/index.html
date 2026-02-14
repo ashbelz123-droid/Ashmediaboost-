@@ -1,103 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ashmediaboost</title>
-<style>
-body { font-family: Arial,sans-serif; margin:0; padding:0; background:#f9f9f9; text-align:center; }
-header { background:#3B82F6; color:white; padding:1rem; }
-main { padding:1rem; display:flex; flex-direction: column; align-items:center; }
-.country { display:flex; align-items:center; justify-content:center; margin-bottom:0.5rem; }
-.country img { width:24px; height:24px; margin-right:0.5rem; }
-.provider { background:white; padding:1rem; margin:0.5rem 0; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); width:90%; max-width:400px; }
-button { background:#3B82F6; color:white; border:none; padding:0.5rem 1rem; border-radius:5px; cursor:pointer; margin:0.25rem 0; width:80%; }
-button:disabled { background:#999; }
-</style>
+  <title>AshMediaBoost</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      margin: 10px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 350px;
+    }
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #22c55e;
+      color: white;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1>Ashmediaboost</h1>
-  <p>Your wallet balance: <span id="wallet">0</span> UGX</p>
-</header>
+  <h1>AshMediaBoost</h1>
+  <div id="packages"></div>
 
-<main>
-  <h2>Select Country</h2>
-  <div id="countries"></div>
+  <script>
+    fetch("/packages")
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById("packages");
+        data.forEach(pkg => {
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <h3>${pkg.name}</h3>
+            <p>${pkg.description}</p>
+            <p>Provider: ${pkg.providers.display_name}</p>
+            <p>Price: $${pkg.price_usd}</p>
+            <button>Order Now</button>
+          `;
+          container.appendChild(div);
+        });
+      });
+  </script>
 
-  <h2>Providers & Packages</h2>
-  <div id="providers"></div>
-</main>
-
-<script>
-const supabaseJs = window.supabase;
-const SUPABASE_URL = 'https://akvptdkxaasjjlrbsals.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_la7bQGB9sDm1sYXwo2Z_nQ_jwKY7OMu';
-const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-let userWallet = 0;
-const userId = 1;
-
-// Load countries + packages
-async function loadCountries() {
-  const res = await fetch('/data');
-  const data = await res.json();
-  const countriesDiv = document.getElementById('countries');
-
-  data.countries.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'country';
-    div.innerHTML = `<img src="${c.flag_icon_url}" alt="${c.country_name}"/> ${c.country_name}`;
-    countriesDiv.appendChild(div);
-  });
-
-  loadPackages(data.packages);
-}
-
-function loadPackages(packages) {
-  const providersDiv = document.getElementById('providers');
-  providersDiv.innerHTML = '';
-  const grouped = {};
-  packages.forEach(p => {
-    const providerName = p.providers.display_name;
-    if (!grouped[providerName]) grouped[providerName] = [];
-    grouped[providerName].push(p);
-  });
-
-  for (const [providerName, pkgs] of Object.entries(grouped)) {
-    const div = document.createElement('div');
-    div.className = 'provider';
-    div.innerHTML = `<h3>${providerName}</h3>`;
-    pkgs.forEach(p => {
-      const btn = document.createElement('button');
-      btn.textContent = `${p.package_name} - ${p.price_usd * p.profit_multiplier} USD`;
-      btn.onclick = () => createOrder(p.id);
-      div.appendChild(btn);
-    });
-    providersDiv.appendChild(div);
-  }
-}
-
-async function createOrder(packageId) {
-  const quantity = 1;
-  const res = await fetch('/orders', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id: userId, package_id: packageId, quantity })
-  });
-  const data = await res.json();
-  if (data.error) alert('Order failed: ' + data.error);
-  else {
-    alert('Order created!');
-    userWallet -= data.order.price_local;
-    document.getElementById('wallet').textContent = userWallet;
-  }
-}
-
-loadCountries();
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.10.1/dist/supabase.min.js"></script>
 </body>
 </html>
