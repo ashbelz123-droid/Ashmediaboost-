@@ -1,78 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AshMediaBoost</title>
-  <style>
-    body {
-      background: #0f172a;
-      color: white;
-      font-family: Arial;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      text-align: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .card {
-      background: #1e293b;
-      padding: 20px;
-      margin: 10px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 350px;
-    }
-    select, button {
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
-    }
-    button {
-      background: #22c55e;
-      color: white;
-    }
-  </style>
+  <title>AshMediaBoost Packages</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="container">
+    <h1>AshMediaBoost Packages</h1>
 
-<h1>AshMediaBoost</h1>
+    <!-- Currency Selection -->
+    <div class="currency-select">
+      <label for="currency">Select Currency:</label>
+      <select id="currency">
+        <option value="USD">USD 🇺🇸</option>
+        <option value="UGX">UGX 🇺🇬</option>
+        <option value="KES">KES 🇰🇪</option>
+      </select>
+      <button id="fetchPackages">Load Packages</button>
+    </div>
 
-<select id="currency">
-  <option value="UGX">Uganda (UGX)</option>
-  <option value="KES">Kenya (KES)</option>
-  <option value="TZS">Tanzania (TZS)</option>
-</select>
+    <!-- Packages Display -->
+    <div id="packages" class="packages"></div>
+  </div>
 
-<button onclick="loadPackages()">Load Packages</button>
+  <script>
+    const packagesDiv = document.getElementById("packages");
+    const fetchBtn = document.getElementById("fetchPackages");
+    const currencySelect = document.getElementById("currency");
 
-<div id="packages"></div>
+    // Map providers to icons
+    const providerIcons = {
+      "Basic": "https://cdn-icons-png.flaticon.com/512/190/190411.png",
+      "Standard": "https://cdn-icons-png.flaticon.com/512/190/190422.png",
+      "Premium": "https://cdn-icons-png.flaticon.com/512/190/190445.png"
+    };
 
-<script>
-function loadPackages() {
-  const currency = document.getElementById("currency").value;
+    // Fetch packages
+    fetchBtn.addEventListener("click", async () => {
+      packagesDiv.innerHTML = "Loading...";
+      const currency = currencySelect.value;
 
-  fetch("/packages/" + currency)
-    .then(res => res.json())
-    .then(data => {
-      const container = document.getElementById("packages");
-      container.innerHTML = "";
+      try {
+        const res = await fetch(`https://your-render-backend-url/packages/${currency}`);
+        const data = await res.json();
 
-      data.forEach(pkg => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <h3>${pkg.name}</h3>
-          <p>${pkg.description}</p>
-          <p><strong>${pkg.local_price} ${pkg.currency}</strong></p>
-        `;
-        container.appendChild(div);
-      });
+        if (data.error) {
+          packagesDiv.innerHTML = `<p class="error">${data.error}</p>`;
+          return;
+        }
+
+        // Render package cards
+        packagesDiv.innerHTML = data.map(pkg => `
+          <div class="package-card">
+            <h2>${pkg.name}</h2>
+            <p>
+              <strong>Provider:</strong> 
+              <img src="${providerIcons[pkg.provider] || ''}" alt="${pkg.provider}" width="20" style="vertical-align:middle; margin-right:5px;">
+              ${pkg.provider}
+            </p>
+            <p>${pkg.description}</p>
+            <p><strong>Price:</strong> ${pkg.local_price} ${pkg.currency}</p>
+          </div>
+        `).join("");
+      } catch (err) {
+        packagesDiv.innerHTML = `<p class="error">Failed to fetch packages</p>`;
+      }
     });
-}
-</script>
-
+  </script>
 </body>
 </html>
