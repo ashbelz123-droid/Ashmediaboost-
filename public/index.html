@@ -5,57 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ashmediaboost</title>
 <style>
-  body { 
-    font-family: Arial, sans-serif; 
-    margin:0; padding:0; 
-    background:#f9f9f9; 
-    text-align:center; /* Center everything */
-  }
-  header { 
-    background:#3B82F6; 
-    color:white; 
-    padding:1rem; 
-  }
-  main { 
-    padding:1rem; 
-    display:flex;
-    flex-direction: column;
-    align-items: center; /* Center main content */
-  }
-  .country { 
-    display:flex; 
-    align-items:center; 
-    justify-content:center; /* Center flag + name */
-    margin-bottom:0.5rem; 
-  }
-  .country img { 
-    width:24px; 
-    height:24px; 
-    margin-right:0.5rem; 
-  }
-  .provider { 
-    background:white; 
-    padding:1rem; 
-    margin:0.5rem 0; 
-    border-radius:8px; 
-    box-shadow:0 2px 5px rgba(0,0,0,0.1); 
-    width: 90%;
-    max-width: 400px; 
-  }
-  .provider h3 {
-    margin-top: 0;
-  }
-  button { 
-    background:#3B82F6; 
-    color:white; 
-    border:none; 
-    padding:0.5rem 1rem; 
-    border-radius:5px; 
-    cursor:pointer; 
-    margin: 0.25rem 0;
-    width: 80%;
-  }
-  button:disabled { background:#999; }
+body { font-family: Arial,sans-serif; margin:0; padding:0; background:#f9f9f9; text-align:center; }
+header { background:#3B82F6; color:white; padding:1rem; }
+main { padding:1rem; display:flex; flex-direction: column; align-items:center; }
+.country { display:flex; align-items:center; justify-content:center; margin-bottom:0.5rem; }
+.country img { width:24px; height:24px; margin-right:0.5rem; }
+.provider { background:white; padding:1rem; margin:0.5rem 0; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); width:90%; max-width:400px; }
+button { background:#3B82F6; color:white; border:none; padding:0.5rem 1rem; border-radius:5px; cursor:pointer; margin:0.25rem 0; width:80%; }
+button:disabled { background:#999; }
 </style>
 </head>
 <body>
@@ -74,17 +31,17 @@
 </main>
 
 <script>
+const supabaseJs = window.supabase;
 const SUPABASE_URL = 'https://akvptdkxaasjjlrbsals.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_la7bQGB9sDm1sYXwo2Z_nQ_jwKY7OMu';
-const supabaseJs = window.supabase; // Using CDN
 const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let userWallet = 0;
-const userId = 1; // Demo user id
+const userId = 1;
 
-// Load countries
+// Load countries + packages
 async function loadCountries() {
-  const res = await fetch('/data'); // Calls your backend /data
+  const res = await fetch('/data');
   const data = await res.json();
   const countriesDiv = document.getElementById('countries');
 
@@ -98,13 +55,10 @@ async function loadCountries() {
   loadPackages(data.packages);
 }
 
-// Load packages grouped by provider
 function loadPackages(packages) {
   const providersDiv = document.getElementById('providers');
   providersDiv.innerHTML = '';
-
   const grouped = {};
-
   packages.forEach(p => {
     const providerName = p.providers.display_name;
     if (!grouped[providerName]) grouped[providerName] = [];
@@ -115,19 +69,16 @@ function loadPackages(packages) {
     const div = document.createElement('div');
     div.className = 'provider';
     div.innerHTML = `<h3>${providerName}</h3>`;
-    
     pkgs.forEach(p => {
       const btn = document.createElement('button');
       btn.textContent = `${p.package_name} - ${p.price_usd * p.profit_multiplier} USD`;
       btn.onclick = () => createOrder(p.id);
       div.appendChild(btn);
     });
-
     providersDiv.appendChild(div);
   }
 }
 
-// Create order
 async function createOrder(packageId) {
   const quantity = 1;
   const res = await fetch('/orders', {
@@ -144,11 +95,9 @@ async function createOrder(packageId) {
   }
 }
 
-// Initialize
 loadCountries();
 </script>
 
-<!-- Supabase JS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.10.1/dist/supabase.min.js"></script>
 </body>
-  </html>
+</html>
