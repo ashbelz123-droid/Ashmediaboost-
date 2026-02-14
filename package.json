@@ -1,7 +1,7 @@
 {
   "name": "ashmediaboost",
   "version": "1.0.0",
-  "description": "Ashmediaboost Node.js + Supabase backend with mobile frontend",
+  "description": "Ashmediaboost SMM site with Supabase backend + admin panel",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
