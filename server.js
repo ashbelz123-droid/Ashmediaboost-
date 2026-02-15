@@ -6,184 +6,166 @@ const jwt = require("jsonwebtoken");
 const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
-
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  console.error("❌ Missing Supabase environment variables");
-  process.exit(1);
-}
+app.use(express.static("public")); // serve frontend
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// ==========================
-// SIGNUP
-// ==========================
-app.post("/api/signup", async (req, res) => {
-  try {
-    const { username, email, password, country_code } = req.body;
+// -----------------------------
+// Test Route
+// -----------------------------
+app.get("/", (req, res) => res.send("AshMediaBoost API Running 🚀"));
 
-    if (!username || !email || !password || !country_code) {
-      return res.status(400).json({ error: "All fields required" });
-    }
+// -----------------------------
+// Signup
+// -----------------------------
+app.post("/signup", async (req, res) => {
+  const { email, password, country_code } = req.body;
+  const hashed = await bcrypt.hash(password, 10);
 
-    const hashed = await bcrypt.hash(password, 10);
+  const { data: country } = await supabase
+    .from("countries")
+    .select("id")
+    .eq("country_code", country_code)
+    .single();
 
-    const { data, error } = await supabase
-      .from("users")
-      .insert([
-        { username, email, password: hashed, country_code }
-      ])
-      .select()
-      .single();
+  if (!country) return res.status(400).json({ error: "Invalid country" });
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
+  const { data, error } = await supabase
+    .from("users")
+    .insert([{ email, password: hashed, country_id: country.id }])
+    .select()
+    .single();
 
-    const token = jwt.sign({ id: data.id }, JWT_SECRET);
+  if (error) return res.status(400).json({ error: error.message });
 
-    res.json({ token, user: data });
-
-  } catch (err) {
-    console.error("Signup Error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
+  const token = jwt.sign({ userId: data.id }, JWT_SECRET, { expiresIn: "7d" });
+  res.json({ message: "User created", token, user: data });
 });
 
-// ==========================
-// LOGIN
-// ==========================
-app.post("/api/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+// -----------------------------
+// Login
+// -----------------------------
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const { data: user, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", email)
+    .single();
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password required" });
-    }
+  if (error || !user) return res.status(400).json({ error: "Invalid credentials" });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(400).json({ error: "Invalid credentials" });
 
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("email", email)
-      .single();
-
-    if (error || !data) {
-      return res.status(400).json({ error: "User not found" });
-    }
-
-    const valid = await bcrypt.compare(password, data.password);
-
-    if (!valid) {
-      return res.status(401).json({ error: "Wrong password" });
-    }
-
-    const token = jwt.sign({ id: data.id }, JWT_SECRET);
-
-    res.json({ token, user: data });
-
-  } catch (err) {
-    console.error("Login Error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
+  res.json({ message: "Logged in", token, user });
 });
 
-// ==========================
-// GET PACKAGES
-// ==========================
-app.get("/api/packages/:country", async (req, res) => {
-  try {
-    const country = req.params.country;
+// -----------------------------
+// Get Packages with Dynamic Price
+// -----------------------------
+app.get("/packages/:currency", async (req, res) => {
+  const currency = req.params.currency;
 
-    const { data, error } = await supabase
-      .from("packages")
-      .select("*")
-      .eq("country_code", country);
+  const { data: rateData } = await supabase
+    .from("currency_rates")
+    .select("*")
+    .eq("currency_code", currency)
+    .single();
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
+  if (!rateData) return res.status(400).json({ error: "Currency not found" });
 
-    res.json(data);
+  const { data: packages } = await supabase.from("packages").select("*");
 
-  } catch (err) {
-    console.error("Packages Error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
+  const result = packages.map(pkg => ({
+    id: pkg.id,
+    name: pkg.name,
+    platform: pkg.platform,
+    local_price: Math.ceil(pkg.price_per_1000 * pkg.profit_multiplier * rateData.rate),
+    min_quantity: pkg.min_quantity,
+    max_quantity: pkg.max_quantity,
+    currency
+  }));
+
+  res.json(result);
 });
 
-// ==========================
-// UPDATE RATE (ADMIN)
-// ==========================
-app.post("/api/admin/update-rate", async (req, res) => {
-  try {
-    const { currency_code, rate, email, password } = req.body;
+// -----------------------------
+// Place Order
+// -----------------------------
+app.post("/order", async (req, res) => {
+  const { token, package_id, quantity } = req.body;
 
-    if (
-      email !== process.env.ADMIN_EMAIL ||
-      password !== process.env.ADMIN_PASSWORD
-    ) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
 
-    const { error } = await supabase
-      .from("currency_rates")
-      .update({ rate, updated_at: new Date() })
-      .eq("currency_code", currency_code);
+  let decoded;
+  try { decoded = jwt.verify(token, JWT_SECRET); }
+  catch { return res.status(401).json({ error: "Invalid token" }); }
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
+  const { data: pkg } = await supabase
+    .from("packages")
+    .select("*")
+    .eq("id", package_id)
+    .single();
 
-    res.json({ message: "Rate updated successfully" });
+  if (!pkg) return res.status(400).json({ error: "Package not found" });
 
-  } catch (err) {
-    console.error("Admin Error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
+  const { data: user } = await supabase
+    .from("users")
+    .select("id, country_id")
+    .eq("id", decoded.userId)
+    .single();
+
+  const { data: rateData } = await supabase
+    .from("countries")
+    .select("currency_code")
+    .eq("id", user.country_id)
+    .single();
+
+  const { data: currencyRate } = await supabase
+    .from("currency_rates")
+    .select("*")
+    .eq("currency_code", rateData.currency_code)
+    .single();
+
+  const total_price = Math.ceil(pkg.price_per_1000 * pkg.profit_multiplier * quantity / 1000 * currencyRate.rate);
+
+  const { data: order, error } = await supabase
+    .from("orders")
+    .insert([{ user_id: user.id, package_id, quantity, total_price }])
+    .select()
+    .single();
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.json({ message: "Order placed", order });
 });
 
-// ==========================
-// WALLET ADD
-// ==========================
-app.post("/api/wallet/add", async (req, res) => {
-  try {
-    const { user_id, amount } = req.body;
+// -----------------------------
+// Admin Update Currency Rate
+// -----------------------------
+app.post("/admin/update-rate", async (req, res) => {
+  const { currency_code, rate, email, password } = req.body;
 
-    if (!user_id || !amount) {
-      return res.status(400).json({ error: "Missing fields" });
-    }
+  if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD)
+    return res.status(401).json({ error: "Unauthorized" });
 
-    const { error } = await supabase
-      .from("wallet_transactions")
-      .insert([
-        { user_id, amount, type: "credit" }
-      ]);
+  const { error } = await supabase
+    .from("currency_rates")
+    .update({ rate, updated_at: new Date() })
+    .eq("currency_code", currency_code);
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
+  if (error) return res.status(400).json({ error: error.message });
 
-    res.json({ success: true });
-
-  } catch (err) {
-    console.error("Wallet Error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
+  res.json({ message: "Rate updated successfully" });
 });
 
-// ==========================
-// START SERVER
-// ==========================
 const PORT = process.env.PORT || 10000;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
