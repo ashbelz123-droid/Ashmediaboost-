@@ -1,0 +1,38 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background: #f3f4f6;
+  color: #111;
+}
+
+.platform-grid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 25px;
+  margin: 50px auto;
+}
+
+.platform-card {
+  background: #fff;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-radius: 20px;
+  text-align: center;
+  padding: 40px;
+  width: 160px;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.platform-card:hover {
+  transform: translateY(-7px);
+}
+
+.icon {
+  font-size: 50px;
+  margin-bottom: 15px;
+}
+
+.name {
+  font-weight: bold;
+  font-size: 18px;
+}
