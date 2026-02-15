@@ -3,34 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>User Panel | AshMediaBoost</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="style.css">
+<title>Dashboard - AshMediaBoost</title>
 </head>
 <body>
-<header>
-  <h1>Dashboard</h1>
-  <button id="logoutBtn">Logout</button>
-</header>
-<div class="sidebar">
-  <a href="dashboard.html">Dashboard</a>
-  <a href="#orders">Orders</a>
-  <a href="#packages">Packages</a>
-  <a href="#settings">Settings</a>
-</div>
-<main>
-  <h2>Packages</h2>
-  <label>Quantity</label>
-  <input type="number" id="quantityInput" placeholder="Enter amount" min="1">
-  <div id="packages"></div>
+  <div class="dashboard-container">
+    <h1>Welcome, <span id="userEmail"></span></h1>
+    <h3>Wallet Balance: <span id="walletBalance"></span></h3>
 
-  <h2 id="orders">Your Orders</h2>
-  <table class="table" id="ordersTable">
-    <thead>
-      <tr><th>ID</th><th>Package</th><th>Quantity</th><th>Total</th><th>Status</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</main>
-<script src="js/dashboard.js"></script>
+    <h2>Available Packages</h2>
+    <div id="packagesGrid" class="packages-grid"></div>
+
+    <h2>Your Orders</h2>
+    <div id="ordersGrid" class="orders-grid"></div>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) window.location.href = '/auth.html';
+
+    document.getElementById('userEmail').innerText = user.email;
+    document.getElementById('walletBalance').innerText = user.wallet_balance || 0;
+
+    // Load packages
+    async function loadPackages() {
+      const res = await fetch('/packages');
+      const packages = await res.json();
+      const grid = document.getElementById('packagesGrid');
+      grid.innerHTML = '';
+      packages.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'package-card';
+        div.innerHTML = `
+          <h3>${p.name}</h3>
+          <p>Platform: ${p.platform}</p>
+          <p>Price per 1000: ${p.price_per_1000} USD</p>
+          <p>Min Quantity: ${p.min_quantity}</p>
+          <button onclick="orderPackage('${p.id}', ${p.price_per_1000})">Order</button>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    async function orderPackage(packageId, priceUSD) {
+      const quantity = prompt("Enter quantity:");
+      if (!quantity || isNaN(quantity) || quantity < 1) return alert("Invalid quantity");
+
+      const res = await fetch('/order', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ user_id: user.id, package_id: packageId, quantity })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Order placed! Total Price: ${data.total_price.toLocaleString()}`);
+        loadWallet();
+        loadOrders();
+      } else {
+        alert(data.error || 'Order failed');
+      }
+    }
+
+    async function loadWallet() {
+      const res = await fetch('/login', { // reload user data
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email: user.email, password: user.password || '' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('walletBalance').innerText = data.user.wallet_balance;
+      }
+    }
+
+    async function loadOrders() {
+      // Placeholder: you can create an endpoint /orders?user_id=...
+      // For now we'll just leave this section ready to implement
+      document.getElementById('ordersGrid').innerHTML = "<p>Orders will appear here.</p>";
+    }
+
+    loadPackages();
+    loadOrders();
+  </script>
 </body>
 </html>
