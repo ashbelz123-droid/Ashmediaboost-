@@ -3,63 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AshMediaBoost Panel</title>
-<style>
-body { font-family: Arial, sans-serif; background:#f4f6f8; color:#333; margin:0; padding:0;}
-header{background:#1e40af;color:white;padding:1rem;text-align:center;}
-main{max-width:900px;margin:2rem auto;padding:1rem;background:white;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.1);}
-select,input{padding:0.5rem;font-size:1rem;margin:0.5rem 0;width:100%;}
-button{padding:0.7rem 1.5rem;background:#1e40af;color:white;border:none;border-radius:5px;cursor:pointer;margin-top:1rem;}
-button:hover{background:#3749b0;}
-.package{padding:1rem;border:1px solid #ddd;border-radius:5px;margin:1rem 0;}
-.package h3{margin:0 0 0.5rem 0;}
-.package p{margin:0.2rem 0;}
-</style>
+<title>AshMediaBoost | Login</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header>
-  <h1>AshMediaBoost Dashboard</h1>
-</header>
-<main>
-  <h2>User Panel</h2>
-  <label>Country</label>
-  <select id="countrySelect">
-    <option value="UGX">Uganda 🇺🇬</option>
-    <option value="TZS">Tanzania 🇹🇿</option>
-    <option value="RWF">Rwanda 🇷🇼</option>
-    <option value="KES">Kenya 🇰🇪</option>
-  </select>
+<div class="container">
+  <h1>AshMediaBoost</h1>
+  <div class="auth-box">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <select id="loginCountry">
+      <option value="UGX">Uganda 🇺🇬</option>
+      <option value="TZS">Tanzania 🇹🇿</option>
+      <option value="RWF">Rwanda 🇷🇼</option>
+      <option value="KES">Kenya 🇰🇪</option>
+    </select>
+    <button id="loginBtn">Login</button>
+    <p>Don't have an account? <a href="#" id="showSignup">Signup</a></p>
+  </div>
 
-  <label>Quantity</label>
-  <input type="number" id="quantityInput" placeholder="Enter amount" min="1">
-
-  <button id="loadPackages">Show Packages</button>
-
-  <div id="packages"></div>
-</main>
+  <div class="auth-box hidden" id="signupBox">
+    <h2>Signup</h2>
+    <input type="email" id="signupEmail" placeholder="Email">
+    <input type="password" id="signupPassword" placeholder="Password">
+    <select id="signupCountry">
+      <option value="UGX">Uganda 🇺🇬</option>
+      <option value="TZS">Tanzania 🇹🇿</option>
+      <option value="RWF">Rwanda 🇷🇼</option>
+      <option value="KES">Kenya 🇰🇪</option>
+    </select>
+    <button id="signupBtn">Signup</button>
+    <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+  </div>
+</div>
 
 <script>
-document.getElementById('loadPackages').addEventListener('click', async () => {
-  const currency = document.getElementById('countrySelect').value;
-  const quantity = parseInt(document.getElementById('quantityInput').value)||0;
-  if(quantity<=0) return alert("Enter valid quantity");
+const loginBox = document.querySelector('.auth-box');
+const signupBox = document.getElementById('signupBox');
+document.getElementById('showSignup').addEventListener('click', ()=>{loginBox.classList.add('hidden'); signupBox.classList.remove('hidden')});
+document.getElementById('showLogin').addEventListener('click', ()=>{signupBox.classList.add('hidden'); loginBox.classList.remove('hidden')});
 
-  const res = await fetch(`/packages/${currency}`);
+document.getElementById('signupBtn').addEventListener('click', async ()=>{
+  const email = document.getElementById('signupEmail').value;
+  const password = document.getElementById('signupPassword').value;
+  const country_code = document.getElementById('signupCountry').value;
+  const res = await fetch('/signup', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,country_code})});
   const data = await res.json();
-  const container = document.getElementById('packages');
-  container.innerHTML='';
-  data.forEach(pkg=>{
-    const total = Math.ceil(pkg.local_price * quantity /1000);
-    container.innerHTML+=`
-      <div class="package">
-        <h3>${pkg.name} (${pkg.platform})</h3>
-        <p>Unit Price: ${pkg.local_price} ${pkg.currency} /1000</p>
-        <p>Quantity: ${quantity}</p>
-        <p><strong>Total Price: ${total} ${pkg.currency}</strong></p>
-        <p>Min: ${pkg.min_quantity}, Max: ${pkg.max_quantity}</p>
-      </div>
-    `;
-  });
+  if(data.token){ localStorage.setItem('token', data.token); window.location.href='dashboard.html'; } 
+  else alert(data.error);
+});
+
+document.getElementById('loginBtn').addEventListener('click', async ()=>{
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const res = await fetch('/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+  const data = await res.json();
+  if(data.token){ localStorage.setItem('token', data.token); window.location.href='dashboard.html'; } 
+  else alert(data.error);
 });
 </script>
 </body>
