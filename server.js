@@ -3,17 +3,12 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { createClient } = require("@supabase/supabase-js");
+const supabase = require("./utils/supabaseClient");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 
 // -----------------------------
 // Auth Routes
@@ -94,8 +89,5 @@ app.post("/api/wallet/add", async (req, res) => {
   res.json({ success: true, data });
 });
 
-// -----------------------------
-// Server Start
-// -----------------------------
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
