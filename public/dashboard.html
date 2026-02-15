@@ -1,51 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AshMediaBoost Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - AshMediaBoost</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Welcome to AshMediaBoost</h1>
-  <div id="services-container"></div>
-
-  <script src="script.js"></script>
-  <script>
-    async function loadServices() {
-      const res = await fetch("/services");
-      const services = await res.json();
-      const container = document.getElementById("services-container");
-      container.innerHTML = "";
-
-      services.forEach(s => {
-        const div = document.createElement("div");
-        div.className = "service-card";
-        div.innerHTML = `
-          <h3>${s.platform} (${s.provider})</h3>
-          <p>Tier: ${s.tier}</p>
-          <p>Price: $${s.price}</p>
-          <p>Speed: ${s.speedHours} hours | Lifetime: ${s.lifetime}</p>
-          <button onclick="placeOrder('${s.id}', '${s.provider}')">Order</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    async function placeOrder(serviceId, provider) {
-      const userId = prompt("Enter your user ID (for now)"); // simple mock
-      const quantity = prompt("Quantity");
-
-      const res = await fetch("/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, serviceId, provider, quantity })
-      });
-
-      const data = await res.json();
-      alert(data.status === "success" ? "Order placed! ID: " + data.orderId : data.msg);
-    }
-
-    loadServices();
-  </script>
+<div class="container">
+  <h1>Packages</h1>
+  <div id="packages"></div>
+</div>
+<script src="app.js"></script>
 </body>
 </html>
