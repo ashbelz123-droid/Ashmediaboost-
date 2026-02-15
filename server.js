@@ -1,171 +1,123 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { createClient } = require("@supabase/supabase-js");
+const express = require('express');
+const bcrypt = require('bcrypt');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const { Pool } = require('pg');
+
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());
-app.use(express.static("public")); // serve frontend
+app.use(bodyParser.json());
+app.use(express.static('public'));
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Postgres pool
+const pool = new Pool({
+  connectionString: process.env.DB_URL
+});
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-// -----------------------------
-// Test Route
-// -----------------------------
-app.get("/", (req, res) => res.send("AshMediaBoost API Running 🚀"));
-
-// -----------------------------
+// --------------------------
 // Signup
-// -----------------------------
-app.post("/signup", async (req, res) => {
+// --------------------------
+app.post('/signup', async (req, res) => {
   const { email, password, country_code } = req.body;
-  const hashed = await bcrypt.hash(password, 10);
 
-  const { data: country } = await supabase
-    .from("countries")
-    .select("id")
-    .eq("country_code", country_code)
-    .single();
+  try {
+    // Check if email exists
+    const exists = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
+    if (exists.rows.length > 0) return res.status(400).json({ error: 'Email already registered' });
 
-  if (!country) return res.status(400).json({ error: "Invalid country" });
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  const { data, error } = await supabase
-    .from("users")
-    .insert([{ email, password: hashed, country_id: country.id }])
-    .select()
-    .single();
+    // Get country_id
+    const countryResult = await pool.query('SELECT id FROM countries WHERE country_code=$1', [country_code]);
+    if (countryResult.rows.length === 0) return res.status(400).json({ error: 'Invalid country' });
+    const country_id = countryResult.rows[0].id;
 
-  if (error) return res.status(400).json({ error: error.message });
+    // Insert user
+    await pool.query(
+      'INSERT INTO users (email, password, country_id, wallet_balance) VALUES ($1, $2, $3, $4)',
+      [email, hashedPassword, country_id, 0]
+    );
 
-  const token = jwt.sign({ userId: data.id }, JWT_SECRET, { expiresIn: "7d" });
-  res.json({ message: "User created", token, user: data });
+    res.json({ success: true, message: 'Signup successful' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// -----------------------------
+// --------------------------
 // Login
-// -----------------------------
-app.post("/login", async (req, res) => {
+// --------------------------
+app.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  const { data: user, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("email", email)
-    .single();
+  try {
+    const userResult = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
+    if (userResult.rows.length === 0) return res.status(400).json({ error: 'Invalid credentials' });
 
-  if (error || !user) return res.status(400).json({ error: "Invalid credentials" });
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.status(400).json({ error: "Invalid credentials" });
+    const user = userResult.rows[0];
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(400).json({ error: 'Invalid credentials' });
 
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
-  res.json({ message: "Logged in", token, user });
+    res.json({ success: true, user: { id: user.id, email: user.email, wallet_balance: user.wallet_balance } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// -----------------------------
-// Get Packages with Dynamic Price
-// -----------------------------
-app.get("/packages/:currency", async (req, res) => {
-  const currency = req.params.currency;
-
-  const { data: rateData } = await supabase
-    .from("currency_rates")
-    .select("*")
-    .eq("currency_code", currency)
-    .single();
-
-  if (!rateData) return res.status(400).json({ error: "Currency not found" });
-
-  const { data: packages } = await supabase.from("packages").select("*");
-
-  const result = packages.map(pkg => ({
-    id: pkg.id,
-    name: pkg.name,
-    platform: pkg.platform,
-    local_price: Math.ceil(pkg.price_per_1000 * pkg.profit_multiplier * rateData.rate),
-    min_quantity: pkg.min_quantity,
-    max_quantity: pkg.max_quantity,
-    currency
-  }));
-
-  res.json(result);
+// --------------------------
+// Get Packages
+// --------------------------
+app.get('/packages', async (req, res) => {
+  try {
+    const packagesResult = await pool.query('SELECT * FROM packages');
+    res.json(packagesResult.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// -----------------------------
+// --------------------------
 // Place Order
-// -----------------------------
-app.post("/order", async (req, res) => {
-  const { token, package_id, quantity } = req.body;
+// --------------------------
+app.post('/order', async (req, res) => {
+  const { user_id, package_id, quantity } = req.body;
+  const FIXED_PROFIT_USD = 1.6;
 
-  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    // Get package info
+    const pkg = await pool.query('SELECT * FROM packages WHERE id=$1', [package_id]);
+    if (pkg.rows.length === 0) return res.status(400).json({ error: 'Invalid package' });
+    const packageInfo = pkg.rows[0];
 
-  let decoded;
-  try { decoded = jwt.verify(token, JWT_SECRET); }
-  catch { return res.status(401).json({ error: "Invalid token" }); }
+    // Get user info
+    const user = await pool.query('SELECT u.*, c.currency_code, r.rate FROM users u JOIN countries c ON u.country_id=c.id JOIN currency_rates r ON c.currency_code=r.currency_code WHERE u.id=$1', [user_id]);
+    if (user.rows.length === 0) return res.status(400).json({ error: 'User not found' });
+    const userInfo = user.rows[0];
 
-  const { data: pkg } = await supabase
-    .from("packages")
-    .select("*")
-    .eq("id", package_id)
-    .single();
+    // Calculate total price (provider_cost + fixed profit) * exchange_rate
+    const providerCostUSD = packageInfo.price_per_1000; // assume stored in USD
+    const totalPriceLocal = (providerCostUSD + FIXED_PROFIT_USD) * userInfo.rate;
 
-  if (!pkg) return res.status(400).json({ error: "Package not found" });
+    // Insert order (provider hidden, auto-selection can be added)
+    const provider = await pool.query('SELECT * FROM providers WHERE active=TRUE ORDER BY tier DESC LIMIT 1'); // picks highest tier active provider
+    const providerId = provider.rows[0].id;
 
-  const { data: user } = await supabase
-    .from("users")
-    .select("id, country_id")
-    .eq("id", decoded.userId)
-    .single();
+    await pool.query('INSERT INTO orders (user_id, package_id, provider_id, quantity, total_price, status) VALUES ($1,$2,$3,$4,$5,$6)',
+      [user_id, package_id, providerId, quantity, totalPriceLocal, 'pending']
+    );
 
-  const { data: rateData } = await supabase
-    .from("countries")
-    .select("currency_code")
-    .eq("id", user.country_id)
-    .single();
-
-  const { data: currencyRate } = await supabase
-    .from("currency_rates")
-    .select("*")
-    .eq("currency_code", rateData.currency_code)
-    .single();
-
-  const total_price = Math.ceil(pkg.price_per_1000 * pkg.profit_multiplier * quantity / 1000 * currencyRate.rate);
-
-  const { data: order, error } = await supabase
-    .from("orders")
-    .insert([{ user_id: user.id, package_id, quantity, total_price }])
-    .select()
-    .single();
-
-  if (error) return res.status(400).json({ error: error.message });
-
-  res.json({ message: "Order placed", order });
+    res.json({ success: true, total_price: totalPriceLocal });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// -----------------------------
-// Admin Update Currency Rate
-// -----------------------------
-app.post("/admin/update-rate", async (req, res) => {
-  const { currency_code, rate, email, password } = req.body;
-
-  if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD)
-    return res.status(401).json({ error: "Unauthorized" });
-
-  const { error } = await supabase
-    .from("currency_rates")
-    .update({ rate, updated_at: new Date() })
-    .eq("currency_code", currency_code);
-
-  if (error) return res.status(400).json({ error: error.message });
-
-  res.json({ message: "Rate updated successfully" });
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
