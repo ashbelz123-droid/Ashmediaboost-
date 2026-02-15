@@ -1,25 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - AshMediaBoost</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Admin Panel</h1>
-    <h2>Update Currency Rate</h2>
-
-    <input type="text" id="currency-code" placeholder="Currency Code (e.g., UGX)">
-    <input type="number" id="currency-rate" placeholder="New Rate">
-    <input type="email" id="admin-email" placeholder="Admin Email">
-    <input type="password" id="admin-password" placeholder="Admin Password">
-    <button id="update-rate-btn">Update Rate</button>
-
-    <div id="message"></div>
-  </div>
-
-  <script src="app.js"></script>
+<div class="container">
+  <h1>Admin: Update Rates</h1>
+  <input id="currencyCode" placeholder="Currency Code">
+  <input id="rate" placeholder="Rate">
+  <input id="adminEmail" placeholder="Admin Email">
+  <input id="adminPassword" placeholder="Admin Password" type="password">
+  <button onclick="updateRate()">Update</button>
+</div>
+<script src="app.js"></script>
 </body>
 </html>
