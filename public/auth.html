@@ -1,155 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AshMediaBoost Auth</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 20px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 15px 0;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-
-    select, input {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      background: #007bff;
-      color: #fff;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-      width: 95%;
-      font-size: 16px;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-
-    h2 {
-      margin-bottom: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<title>Signup / Login - AshMediaBoost</title>
 </head>
 <body>
+  <div class="auth-container">
+    <h2>Signup</h2>
+    <form id="signupForm">
+      <input type="email" id="signupEmail" placeholder="Email" required />
+      <input type="password" id="signupPassword" placeholder="Password" required />
+      <input type="password" id="signupConfirm" placeholder="Confirm Password" required />
+      <select id="signupCountry" required>
+        <option value="">Select Country</option>
+        <option value="KE">Kenya</option>
+        <option value="UG">Uganda</option>
+        <option value="TZ">Tanzania</option>
+        <option value="RW">Rwanda</option>
+      </select>
+      <button type="submit">Signup</button>
+    </form>
 
-  <div class="card">
-    <h2>Create Account / Login</h2>
-    <select id="countrySelect">
-      <option value="">Select your country</option>
-    </select>
-    <input type="text" id="username" placeholder="Username">
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="signup()">Sign Up</button>
-    <button onclick="login()">Login</button>
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email" required />
+      <input type="password" id="loginPassword" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://blozicmqsebprsfmrwwe.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_Mm5kCbXvtuDhse-EtMzYKA_Wu3CSLZu";
+    // Signup
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      const confirm = document.getElementById('signupConfirm').value;
+      const country_code = document.getElementById('signupCountry').value;
 
-    const countries = [
-      { code: "UG", name: "Uganda", flag: "🇺🇬" },
-      { code: "KE", name: "Kenya", flag: "🇰🇪" },
-      { code: "TZ", name: "Tanzania", flag: "🇹🇿" },
-      { code: "RW", name: "Rwanda", flag: "🇷🇼" }
-    ];
+      if (password !== confirm) return alert("Passwords do not match");
 
-    const countrySelect = document.getElementById("countrySelect");
-    countries.forEach(c => {
-      const option = document.createElement("option");
-      option.value = c.code;
-      option.textContent = `${c.flag} ${c.name}`;
-      countrySelect.appendChild(option);
+      const res = await fetch('/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, country_code })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('Signup successful! You can now login.');
+      } else {
+        alert(data.error || 'Error signing up');
+      }
     });
 
-    async function signup() {
-      const username = document.getElementById("username").value;
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const country_code = countrySelect.value;
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
 
-      if (!username || !email || !password || !country_code) {
-        return alert("All fields are required!");
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = '/dashboard.html';
+      } else {
+        alert(data.error || 'Login failed');
       }
-
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
-          method: "POST",
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${SUPABASE_KEY}`,
-            "Content-Type": "application/json",
-            "Prefer": "return=representation"
-          },
-          body: JSON.stringify({
-            username,
-            email,
-            password,
-            country_code,
-            wallet_balance: 0
-          })
-        });
-
-        const data = await res.json();
-        if (data?.message) return alert("Signup failed: " + data.message);
-        alert("Signup successful! You can now login.");
-      } catch (err) {
-        console.error(err);
-        alert("Error signing up.");
-      }
-    }
-
-    async function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      if (!email || !password) return alert("Email & password required!");
-
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${email}&password=eq.${password}`, {
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${SUPABASE_KEY}`
-          }
-        });
-
-        const data = await res.json();
-        if (!data.length) return alert("Invalid credentials!");
-
-        localStorage.setItem("user", JSON.stringify(data[0]));
-        alert(`Welcome ${data[0].username}!`);
-        window.location.href = "index.html"; // Redirect to main panel
-      } catch (err) {
-        console.error(err);
-        alert("Error logging in.");
-      }
-    }
+    });
   </script>
 </body>
 </html>
