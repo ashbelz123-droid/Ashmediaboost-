@@ -1,0 +1,25 @@
+/* General Styles */
+body { font-family: 'Segoe UI', sans-serif; margin:0; padding:0; background:#f4f6f8; }
+header, .sidebar { background:#1e40af; color:white; }
+a { text-decoration:none; color:inherit; }
+button { cursor:pointer; border:none; border-radius:5px; padding:0.5rem 1rem; background:#1e40af; color:white; transition:0.3s; }
+button:hover { background:#3749b0; }
+
+/* Header */
+header { display:flex; justify-content:space-between; align-items:center; padding:1rem 2rem; }
+header h1 { margin:0; font-size:1.5rem; }
+
+/* Sidebar */
+.sidebar { width:220px; position:fixed; top:0; left:0; bottom:0; padding-top:3.5rem; display:flex; flex-direction:column; }
+.sidebar a { padding:1rem; display:block; margin:0.5rem 0; color:white; border-radius:5px; }
+.sidebar a:hover { background:#3749b0; }
+
+/* Main Content */
+main { margin-left:240px; padding:2rem; }
+.card { background:white; padding:1rem; border-radius:8px; margin-bottom:1rem; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+.table { width:100%; border-collapse:collapse; margin-top:1rem; }
+.table th, .table td { padding:0.75rem; border:1px solid #ddd; text-align:left; }
+.table th { background:#1e40af; color:white; }
+
+/* Responsive */
+@media(max-width:768px){ .sidebar{width:100%; position:relative;} main{margin-left:0;} }
