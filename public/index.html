@@ -3,65 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AshMediaBoost | Login</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="style.css">
+<title>AshMediaBoost</title>
 </head>
 <body>
-<div class="container">
-  <h1>AshMediaBoost</h1>
-  <div class="auth-box">
-    <h2>Login</h2>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPassword" placeholder="Password">
-    <select id="loginCountry">
-      <option value="UGX">Uganda 🇺🇬</option>
-      <option value="TZS">Tanzania 🇹🇿</option>
-      <option value="RWF">Rwanda 🇷🇼</option>
-      <option value="KES">Kenya 🇰🇪</option>
-    </select>
-    <button id="loginBtn">Login</button>
-    <p>Don't have an account? <a href="#" id="showSignup">Signup</a></p>
-  </div>
+  <h1 style="text-align:center; margin-top:40px;">Choose Your Platform</h1>
+  <div class="platform-grid" id="platformGrid"></div>
 
-  <div class="auth-box hidden" id="signupBox">
-    <h2>Signup</h2>
-    <input type="email" id="signupEmail" placeholder="Email">
-    <input type="password" id="signupPassword" placeholder="Password">
-    <select id="signupCountry">
-      <option value="UGX">Uganda 🇺🇬</option>
-      <option value="TZS">Tanzania 🇹🇿</option>
-      <option value="RWF">Rwanda 🇷🇼</option>
-      <option value="KES">Kenya 🇰🇪</option>
-    </select>
-    <button id="signupBtn">Signup</button>
-    <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
-  </div>
-</div>
+  <script>
+    const platforms = [
+      { name: "Instagram", icon: "📸" },
+      { name: "TikTok", icon: "🎵" },
+      { name: "Facebook", icon: "📘" },
+      { name: "Twitter", icon: "🐦" },
+      { name: "YouTube", icon: "▶️" },
+      { name: "Telegram", icon: "✈️" }
+    ];
 
-<script>
-const loginBox = document.querySelector('.auth-box');
-const signupBox = document.getElementById('signupBox');
-document.getElementById('showSignup').addEventListener('click', ()=>{loginBox.classList.add('hidden'); signupBox.classList.remove('hidden')});
-document.getElementById('showLogin').addEventListener('click', ()=>{signupBox.classList.add('hidden'); loginBox.classList.remove('hidden')});
-
-document.getElementById('signupBtn').addEventListener('click', async ()=>{
-  const email = document.getElementById('signupEmail').value;
-  const password = document.getElementById('signupPassword').value;
-  const country_code = document.getElementById('signupCountry').value;
-  const res = await fetch('/signup', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,country_code})});
-  const data = await res.json();
-  if(data.token){ localStorage.setItem('token', data.token); window.location.href='dashboard.html'; } 
-  else alert(data.error);
-});
-
-document.getElementById('loginBtn').addEventListener('click', async ()=>{
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
-  const res = await fetch('/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-  const data = await res.json();
-  if(data.token){ localStorage.setItem('token', data.token); window.location.href='dashboard.html'; } 
-  else alert(data.error);
-});
-</script>
+    const grid = document.getElementById('platformGrid');
+    platforms.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'platform-card';
+      div.innerHTML = `<div class="icon">${p.icon}</div><div class="name">${p.name}</div>`;
+      grid.appendChild(div);
+    });
+  </script>
 </body>
 </html>
