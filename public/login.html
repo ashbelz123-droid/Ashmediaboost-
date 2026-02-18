@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AshMediaBoost - Login</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>AshMediaBoost</h1>
+    
+    <!-- Login Form -->
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Enter Username" required>
+      <input type="password" id="password" placeholder="Enter Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <hr>
+
+    <!-- Forgot User ID Section -->
+    <div class="forgot-id">
+      <p>Forgot User ID? Enter your Email or Phone:</p>
+      <input type="text" id="forgotInput" placeholder="Email or Phone">
+      <button id="sendOTP">Send OTP</button>
+      
+      <!-- OTP Input Placeholder -->
+      <div id="otpSection" style="display:none; margin-top:10px;">
+        <input type="text" id="otpInput" placeholder="Enter OTP">
+        <button id="verifyOTP">Verify OTP</button>
+        <p id="userIdDisplay" style="color:#3b82f6; margin-top:5px;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+        </html>
