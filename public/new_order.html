@@ -1,58 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AshMediaBoost - New Order</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AshMediaBoost | New Order</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>AshMediaBoost</h2>
-    <ul>
-      <li>Dashboard</li>
-      <li>New Order</li>
-      <li>Orders</li>
-      <li>Settings</li>
-      <li>Logout</li>
-    </ul>
-  </div>
+<header><h1>Create New Order</h1></header>
+<main>
+<form id="orderForm">
+  <select id="platform" required>
+    <option value="">Select Platform</option>
+  </select>
+  <select id="service" required>
+    <option value="">Select Service</option>
+  </select>
+  <input type="number" id="quantity" placeholder="Quantity" required min="1">
+  <select id="country" required>
+    <option value="KE">Kenya</option>
+    <option value="UG">Uganda</option>
+    <option value="TZ">Tanzania</option>
+    <option value="RW">Rwanda</option>
+    <option value="ZM">Zambia</option>
+    <option value="ZW">Zimbabwe</option>
+    <option value="MW">Malawi</option>
+  </select>
+  <button type="submit">Place Order</button>
+</form>
+<p id="message"></p>
+</main>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <h1>Place New Order</h1>
+<script src="js/main.js"></script>
+<script>
+async function loadServices(){
+  const country = document.getElementById('country').value;
+  const res = await fetch('/api/services?country='+country);
+  const data = await res.json();
+  const platformSelect = document.getElementById('platform');
+  const serviceSelect = document.getElementById('service');
+  platformSelect.innerHTML = '<option value="">Select Platform</option>';
+  serviceSelect.innerHTML = '<option value="">Select Service</option>';
+  data.services.forEach(s=>{
+    platformSelect.innerHTML += `<option value="${s.platform}">${s.platform}</option>`;
+    serviceSelect.innerHTML += `<option value="${s.service}">(${s.currency}) ${s.price} - ${s.service}</option>`;
+  });
+}
 
-    <form id="orderForm">
-      <!-- Platform Dropdown -->
-      <label for="platform">Platform</label>
-      <select id="platform" required>
-        <option value="">Select Platform</option>
-        <option value="instagram">Instagram</option>
-        <option value="tiktok">TikTok</option>
-        <option value="youtube">YouTube</option>
-      </select>
+document.getElementById('country').addEventListener('change', loadServices);
+window.addEventListener('DOMContentLoaded', loadServices);
 
-      <!-- Service Dropdown -->
-      <label for="service">Service</label>
-      <select id="service" required>
-        <option value="">Select Service</option>
-        <option value="likes">Likes</option>
-        <option value="views">Views</option>
-        <option value="followers">Followers</option>
-      </select>
+document.getElementById('orderForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const platform = document.getElementById('platform').value;
+  const service = document.getElementById('service').value;
+  const quantity = parseInt(document.getElementById('quantity').value);
+  const country = document.getElementById('country').value;
 
-      <!-- Quantity Input -->
-      <label for="quantity">Quantity</label>
-      <input type="number" id="quantity" placeholder="Enter quantity" required>
+  const res = await fetch('/api/services?country='+country);
+  const data = await res.json();
+  const selected = data.services.find(s=>s.service===service);
 
-      <!-- Price Placeholder -->
-      <p>Price: <span id="orderPrice">₦0.00</span></p>
+  const price = selected.price * quantity;
 
-      <!-- Submit Button -->
-      <button type="submit">Place Order</button>
-    </form>
-  </div>
-
-  <script src="js/main.js"></script>
+  const orderRes = await fetch('/api/users/order',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      userId:'user-1',
+      service:service,
+      quantity:quantity,
+      price:price
+    })
+  });
+  const orderData = await orderRes.json();
+  document.getElementById('message').textContent = orderData.message;
+});
+</script>
 </body>
-        </html>
+</html>
