@@ -8,7 +8,7 @@ router.get('/wallet/:id', (req,res)=>{
   try{ childs = JSON.parse(fs.readFileSync(pathChild,'utf8')); }
   catch(err){ childs = []; }
 
-  const panel = childs.find(c => c.id === req.params.id);
+  const panel = childs.find(c=>c.id===req.params.id);
   if(panel) res.json({ wallet: panel.wallet });
   else res.status(404).json({ message:"Child panel not found" });
 });
