@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AshMediaBoost - New Order</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>AshMediaBoost</h2>
+    <ul>
+      <li>Dashboard</li>
+      <li>New Order</li>
+      <li>Orders</li>
+      <li>Settings</li>
+      <li>Logout</li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h1>Place New Order</h1>
+
+    <form id="orderForm">
+      <!-- Platform Dropdown -->
+      <label for="platform">Platform</label>
+      <select id="platform" required>
+        <option value="">Select Platform</option>
+        <option value="instagram">Instagram</option>
+        <option value="tiktok">TikTok</option>
+        <option value="youtube">YouTube</option>
+      </select>
+
+      <!-- Service Dropdown -->
+      <label for="service">Service</label>
+      <select id="service" required>
+        <option value="">Select Service</option>
+        <option value="likes">Likes</option>
+        <option value="views">Views</option>
+        <option value="followers">Followers</option>
+      </select>
+
+      <!-- Quantity Input -->
+      <label for="quantity">Quantity</label>
+      <input type="number" id="quantity" placeholder="Enter quantity" required>
+
+      <!-- Price Placeholder -->
+      <p>Price: <span id="orderPrice">₦0.00</span></p>
+
+      <!-- Submit Button -->
+      <button type="submit">Place Order</button>
+    </form>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+        </html>
