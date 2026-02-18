@@ -1,0 +1,10 @@
+body {
+  margin:0; font-family:Arial, sans-serif; background:#0f172a; color:#f1f5f9;
+}
+.sidebar { width:220px; background:#1e293b; height:100vh; float:left; padding:20px; }
+.main-content { margin-left:240px; padding:20px; }
+.card { background:#1e293b; padding:15px; border-radius:10px; margin-bottom:10px; }
+button { background:#3b82f6; color:#f1f5f9; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; }
+button:hover { opacity:0.9; }
+table { width:100%; border-collapse:collapse; margin-top:10px; }
+th, td { padding:8px; border:1px solid #3b82f6; text-align:left; }
