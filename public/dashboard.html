@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AshMediaBoost - Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>AshMediaBoost</h2>
+    <ul>
+      <li>Dashboard</li>
+      <li>New Order</li>
+      <li>Orders</li>
+      <li>Settings</li>
+      <li>Logout</li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h1>Dashboard</h1>
+
+    <!-- Wallet & Stats Cards -->
+    <div class="cards">
+      <div class="card">
+        <h3>Wallet Balance</h3>
+        <p id="walletBalance">₦0.00</p>
+      </div>
+      <div class="card">
+        <h3>Total Orders</h3>
+        <p id="totalOrders">0</p>
+      </div>
+      <div class="card">
+        <h3>Pending Orders</h3>
+        <p id="pendingOrders">0</p>
+      </div>
+      <div class="card">
+        <h3>Completed Orders</h3>
+        <p id="completedOrders">0</p>
+      </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="orders-table">
+      <h2>Recent Orders</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Service</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <!-- Placeholder rows -->
+          <tr>
+            <td>order-123</td>
+            <td>Instagram Likes</td>
+            <td>500</td>
+            <td>₦5</td>
+            <td>Completed</td>
+          </tr>
+          <tr>
+            <td>order-124</td>
+            <td>TikTok Views</td>
+            <td>1000</td>
+            <td>₦10</td>
+            <td>Pending</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+  </html>
