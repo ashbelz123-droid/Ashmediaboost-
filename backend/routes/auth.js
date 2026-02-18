@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = '../data/users.json';
 
-const admin = { username: "admin", password: "123456" }; // default admin
+const admin = { username: "admin", password: "ashimkagabasiraji256" };
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
@@ -14,9 +12,8 @@ router.post('/login', (req, res) => {
   }
 });
 
-// Forgot ID OTP placeholder
 router.post('/forgot', (req,res)=>{
-  res.json({ success:true, message:"OTP sent (placeholder)" });
+  res.json({ success:true, message:"OTP sent to user (placeholder)" });
 });
 
 module.exports = router;
