@@ -3,22 +3,15 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routes
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const serviceRoutes = require('./routes/services');
-const childRoutes = require('./routes/child');
-const paymentRoutes = require('./routes/payments');
-
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/child', childRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/services', require('./routes/services'));
+app.use('/api/child', require('./routes/child'));
+app.use('/api/payments', require('./routes/payments'));
 
 app.get('/', (req, res) => res.json({ message: 'AshMediaBoost Backend Running 🚀' }));
 
