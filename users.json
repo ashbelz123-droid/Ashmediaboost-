@@ -1,0 +1,8 @@
+[
+  {
+    "id": "user-1a2b3c4d",
+    "username": "ash",
+    "password": "hashedpassword",
+    "wallet": 100
+  }
+]
