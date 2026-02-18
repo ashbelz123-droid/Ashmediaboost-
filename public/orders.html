@@ -1,62 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AshMediaBoost - Orders</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AshMediaBoost | Orders</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>AshMediaBoost</h2>
-    <ul>
-      <li>Dashboard</li>
-      <li>New Order</li>
-      <li>Orders</li>
-      <li>Settings</li>
-      <li>Logout</li>
-    </ul>
-  </div>
+<header><h1>Orders</h1></header>
+<main>
+<table id="ordersTable">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Service</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+</main>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <h1>Orders</h1>
+<script src="js/main.js"></script>
+<script>
+async function loadOrders(){
+  const res = await fetch('/api/users');
+  const orders = await res.json().catch(()=>[]);
+  const tbody = document.getElementById('ordersTable').querySelector('tbody');
+  tbody.innerHTML = '';
+  orders.forEach(o=>{
+    tbody.innerHTML += `<tr>
+      <td>${o.id}</td>
+      <td>${o.service}</td>
+      <td>${o.quantity}</td>
+      <td>${o.price}</td>
+      <td>${o.status}</td>
+    </tr>`;
+  });
+}
 
-    <div class="orders-table">
-      <table>
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Platform</th>
-            <th>Service</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="ordersBody">
-          <!-- Placeholder rows -->
-          <tr>
-            <td>order-123</td>
-            <td>Instagram</td>
-            <td>Likes</td>
-            <td>500</td>
-            <td>₦5</td>
-            <td>Completed</td>
-          </tr>
-          <tr>
-            <td>order-124</td>
-            <td>TikTok</td>
-            <td>Views</td>
-            <td>1000</td>
-            <td>₦10</td>
-            <td>Pending</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <script src="js/main.js"></script>
+window.addEventListener('DOMContentLoaded', loadOrders);
+</script>
 </body>
-  </html>
+</html>
