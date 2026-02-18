@@ -1,81 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AshMediaBoost - Dashboard</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AshMediaBoost | Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>AshMediaBoost</h2>
-    <ul>
-      <li>Dashboard</li>
-      <li>New Order</li>
-      <li>Orders</li>
-      <li>Settings</li>
-      <li>Logout</li>
-    </ul>
+<header>
+  <h1>AshMediaBoost Dashboard</h1>
+</header>
+<main>
+  <div class="cards">
+    <div class="card"><h3>Total Wallet</h3><p id="totalWallet">0</p></div>
+    <div class="card"><h3>Total Orders</h3><p id="totalOrders">0</p></div>
+    <div class="card"><h3>Child Panels</h3><p id="childPanels">0</p></div>
   </div>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <h1>Dashboard</h1>
+  <a href="new_order.html" class="btn">Create New Order</a>
+  <a href="orders.html" class="btn">View Orders</a>
+</main>
 
-    <!-- Wallet & Stats Cards -->
-    <div class="cards">
-      <div class="card">
-        <h3>Wallet Balance</h3>
-        <p id="walletBalance">₦0.00</p>
-      </div>
-      <div class="card">
-        <h3>Total Orders</h3>
-        <p id="totalOrders">0</p>
-      </div>
-      <div class="card">
-        <h3>Pending Orders</h3>
-        <p id="pendingOrders">0</p>
-      </div>
-      <div class="card">
-        <h3>Completed Orders</h3>
-        <p id="completedOrders">0</p>
-      </div>
-    </div>
+<script src="js/main.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', async ()=>{
+  // Fetch and display stats
+  const usersRes = await fetch('/api/users/wallet/user-1');
+  const walletData = await usersRes.json();
+  document.getElementById('totalWallet').textContent = walletData.wallet;
 
-    <!-- Recent Orders Table -->
-    <div class="orders-table">
-      <h2>Recent Orders</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Service</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="ordersBody">
-          <!-- Placeholder rows -->
-          <tr>
-            <td>order-123</td>
-            <td>Instagram Likes</td>
-            <td>500</td>
-            <td>₦5</td>
-            <td>Completed</td>
-          </tr>
-          <tr>
-            <td>order-124</td>
-            <td>TikTok Views</td>
-            <td>1000</td>
-            <td>₦10</td>
-            <td>Pending</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  const ordersRes = await fetch('/api/users');
+  const orders = await ordersRes.json().catch(()=>[]);
+  document.getElementById('totalOrders').textContent = orders.length;
 
-  <script src="js/main.js"></script>
+  const childRes = await fetch('/api/child');
+  const childs = await childRes.json().catch(()=>[]);
+  document.getElementById('childPanels').textContent = childs.length;
+});
+</script>
 </body>
-  </html>
+</html>
