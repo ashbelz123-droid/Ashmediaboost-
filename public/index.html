@@ -1,69 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AshMediaBoost Dashboard</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    input, button { margin: 5px 0; padding: 5px; width: 200px; }
-    section { margin-bottom: 30px; }
-    pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AshMediaBoost Dashboard</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  input, button { margin: 5px 0; padding: 5px; }
+  hr { margin: 20px 0; }
+</style>
 </head>
 <body>
 
-  <h1>AshMediaBoost Full Dashboard</h1>
+<h1>AshMediaBoost Dashboard</h1>
 
-  <!-- SIGNUP -->
-  <section>
-    <h2>Signup</h2>
-    <form id="signupForm">
-      <input id="signupUsername" placeholder="Username" required /><br>
-      <input id="signupPassword" type="password" placeholder="Password" required /><br>
-      <input id="signupEmail" type="email" placeholder="Email" required /><br>
-      <button type="submit">Signup</button>
-    </form>
-  </section>
+<!-- Signup -->
+<h2>Signup</h2>
+<input type="text" id="signup-username" placeholder="Username">
+<input type="password" id="signup-password" placeholder="Password">
+<button onclick="signup()">Signup</button>
+<p id="signup-result"></p>
 
-  <!-- ADMIN LOGIN -->
-  <section>
-    <h2>Admin Login</h2>
-    <form id="loginForm">
-      <input id="loginUsername" placeholder="Username" required /><br>
-      <input id="loginPassword" type="password" placeholder="Password" required /><br>
-      <button type="submit">Login Admin</button>
-    </form>
-  </section>
+<hr>
 
-  <!-- USERS -->
-  <section>
-    <h2>Users</h2>
-    <button id="getUsers">Get Users</button>
-  </section>
+<!-- Admin Login -->
+<h2>Admin Login</h2>
+<input type="text" id="admin-username" placeholder="Admin Username">
+<input type="password" id="admin-password" placeholder="Password">
+<button onclick="adminLogin()">Login Admin</button>
+<p id="login-result"></p>
 
-  <!-- SERVICES -->
-  <section>
-    <h2>Services</h2>
-    <button id="getServices">Get Services</button>
-  </section>
+<hr>
 
-  <!-- CHILD PANEL ORDER -->
-  <section>
-    <h2>Child Panel Order</h2>
-    <form id="childOrderForm">
-      <input id="childUsername" placeholder="Child Username" required /><br>
-      <input id="childOrder" placeholder="Order e.g. 1000 likes" required /><br>
-      <button type="submit">Create Child Order</button>
-    </form>
-    <button id="getOrders">Get Orders</button>
-  </section>
+<!-- Users -->
+<h2>Users</h2>
+<button onclick="getUsers()">Get Users</button>
+<pre id="users-list"></pre>
 
-  <!-- OUTPUT -->
-  <section>
-    <h2>Output</h2>
-    <pre id="output"></pre>
-  </section>
+<hr>
 
-  <script src="js/dashboard.js"></script>
+<!-- Services -->
+<h2>Services</h2>
+<button onclick="getServices()">Get Services</button>
+<pre id="services-list"></pre>
+
+<hr>
+
+<!-- Child Order -->
+<h2>Child Panel Order</h2>
+<input type="text" id="child-username" placeholder="Child Username">
+<input type="text" id="child-order" placeholder="Order e.g. 1000 likes">
+<button onclick="createChildOrder()">Create Child Order</button>
+<pre id="child-order-result"></pre>
+
+<hr>
+
+<!-- All Orders -->
+<h2>All Orders</h2>
+<button onclick="getChildOrders()">Get Orders</button>
+<pre id="all-orders"></pre>
+
+<script>
+const API_URL = '';
+
+async function signup() {
+  const username = document.getElementById('signup-username').value;
+  const password = document.getElementById('signup-password').value;
+  const res = await fetch(`${API_URL}/api/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await res.json();
+  document.getElementById('signup-result').innerText = JSON.stringify(data);
+}
+
+async function adminLogin() {
+  const username = document.getElementById('admin-username').value;
+  const password = document.getElementById('admin-password').value;
+  const res = await fetch(`${API_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await res.json();
+  document.getElementById('login-result').innerText = JSON.stringify(data);
+}
+
+async function getUsers() {
+  const res = await fetch(`${API_URL}/api/users`);
+  const data = await res.json();
+  document.getElementById('users-list').innerText = JSON.stringify(data, null, 2);
+}
+
+async function getServices() {
+  const res = await fetch(`${API_URL}/api/services`);
+  const data = await res.json();
+  document.getElementById('services-list').innerText = JSON.stringify(data, null, 2);
+}
+
+async function createChildOrder() {
+  const username = document.getElementById('child-username').value;
+  const order = document.getElementById('child-order').value;
+  const res = await fetch(`${API_URL}/api/child/order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, order })
+  });
+  const data = await res.json();
+  document.getElementById('child-order-result').innerText = JSON.stringify(data, null, 2);
+}
+
+async function getChildOrders() {
+  const res = await fetch(`${API_URL}/api/child/order`);
+  const data = await res.json();
+  document.getElementById('all-orders').innerText = JSON.stringify(data, null, 2);
+}
+</script>
+
 </body>
-                           </html>
+  </html>
