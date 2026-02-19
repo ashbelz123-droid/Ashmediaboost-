@@ -53,18 +53,19 @@ app.use('/api/services', require('../routes/services'));
 app.use('/api/child', require('../routes/child'));
 app.use('/api/payments', require('../routes/payments'));
 
-// Test route
+// Test price route
 app.get('/api/price', (req, res) => {
   const { orderType, country, provider } = req.query;
   if (!orderType || !country || !provider)
-    return res.status(400).json({ error: 'orderType, country, and provider are required' });
+    return res.status(400).json({ error: 'orderType, country, and provider required' });
   if (!providers[provider])
-    return res.status(400).json({ error: 'Invalid provider name' });
+    return res.status(400).json({ error: 'Invalid provider' });
+
   const finalPrice = getFinalPrice(orderType, country);
   res.json({ orderType, country, provider, finalPrice });
 });
 
-// Root route for healthcheck
+// Healthcheck
 app.get('/', (req, res) => res.json({ message: 'AshMediaBoost Backend Running 🚀' }));
 
 const PORT = process.env.PORT || 5000;
