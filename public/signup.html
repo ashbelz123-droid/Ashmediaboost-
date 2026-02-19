@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signup - AshMediaBoost</title>
+<style>
+body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+input, button { padding: 10px; margin: 5px; font-size: 16px; }
+pre { background: #222; color: #0f0; padding: 10px; }
+</style>
+</head>
+<body>
+<h1>Signup</h1>
+<input type="text" id="username" placeholder="Username"><br>
+<input type="password" id="password" placeholder="Password"><br>
+<button onclick="signup()">Signup</button>
+<pre id="output"></pre>
+
+<script>
+const baseUrl = "https://ashmediaboost-production.up.railway.app/api/auth";
+
+function signup() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  fetch(`${baseUrl}/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  })
+  .then(res => res.json())
+  .then(data => document.getElementById("output").textContent = JSON.stringify(data, null, 2))
+  .catch(err => document.getElementById("output").textContent = err);
+}
+</script>
+</body>
+</html>
