@@ -1,14 +1,13 @@
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-// Serve frontend
-app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // ===== MOCK DATA =====
 let users = [
@@ -19,14 +18,29 @@ let users = [
 let orders = [];
 
 // ===== AUTH =====
+// Admin login
 app.post("/api/auth/login", (req, res) => {
   const { username, password } = req.body;
 
+  // Change admin password as needed
   if (username === "admin" && password === "admin123") {
     return res.json({ success: true, message: "Admin login successful" });
   }
 
   res.status(401).json({ success: false, message: "Invalid credentials" });
+});
+
+// Signup route
+app.post("/api/auth/signup", (req, res) => {
+  const { username, password, email } = req.body;
+
+  if (!username || !password || !email) {
+    return res.status(400).json({ success: false, message: "Missing fields" });
+  }
+
+  // In real app, save user to DB. Here we just mock
+  users.push({ username, email });
+  res.json({ success: true, message: "User registered successfully" });
 });
 
 // ===== USERS =====
@@ -39,14 +53,20 @@ app.get("/api/services", (req, res) => {
   res.json({
     services: [
       { platform: "Instagram", service: "Likes", price: "2.40", currency: "KE" },
-      { platform: "TikTok", service: "Views", price: "1.12", currency: "KE" }
+      { platform: "TikTok", service: "Views", price: "1.12", currency: "KE" },
+      { platform: "YouTube", service: "Subscribers", price: "4.80", currency: "KE" }
     ]
   });
 });
 
-// ===== CHILD ORDER =====
+// ===== CHILD PANEL ORDERS =====
+// Create child order
 app.post("/api/child/order", (req, res) => {
   const { childUsername, order } = req.body;
+
+  if (!childUsername || !order) {
+    return res.status(400).json({ success: false, message: "Missing fields" });
+  }
 
   const newOrder = {
     id: orders.length + 1,
@@ -56,23 +76,17 @@ app.post("/api/child/order", (req, res) => {
   };
 
   orders.push(newOrder);
-
   res.json({ success: true, order: newOrder });
 });
 
-// ===== GET ORDERS =====
+// Get all orders
 app.get("/api/child/orders", (req, res) => {
   res.json({ orders });
 });
 
-// Root
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
-});
+// ===== HEALTHCHECK =====
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "../public/index.html")));
 
-// PORT
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// ===== START SERVER =====
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
