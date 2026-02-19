@@ -1,10 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path'); // ✅ added for static files
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the public folder
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Currency rates
 const currencyRates = {
@@ -46,7 +50,7 @@ function getFinalPrice(orderType, country) {
   return finalPrice;
 }
 
-// Routes
+// API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/services', require('./routes/services'));
@@ -64,6 +68,11 @@ app.get('/api/price', (req, res) => {
 
   const finalPrice = getFinalPrice(orderType, country);
   res.json({ orderType, country, provider, finalPrice });
+});
+
+// Catch-all route to serve index.html for frontend
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
