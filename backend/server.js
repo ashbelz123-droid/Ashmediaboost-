@@ -15,7 +15,7 @@ app.use('/api/services', require('../routes/services'));
 app.use('/api/child', require('../routes/child'));
 app.use('/api/payments', require('../routes/payments'));
 
-// Healthcheck route
+// Healthcheck
 app.get('/', (req, res) => res.json({ message: 'AshMediaBoost Backend Running 🚀' }));
 
 const PORT = process.env.PORT || 8080;
