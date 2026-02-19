@@ -1,22 +1,23 @@
 const express = require('express');
 const router = express.Router();
 
-// Example payments/orders
-let orders = [];
+// Dummy payments log
+let payments = [];
 
-// Create order/payment
+// Create payment
 router.post('/create', (req, res) => {
-  const { username, service, amount } = req.body;
-  if (!username || !service || !amount) return res.status(400).json({ error: 'All fields required' });
+  const { username, amount, method } = req.body;
+  if (!username || !amount || !method)
+    return res.status(400).json({ success: false, message: 'All fields required' });
 
-  const newOrder = { id: orders.length + 1, username, service, amount };
-  orders.push(newOrder);
-  res.json({ success: true, order: newOrder });
+  const payment = { id: payments.length + 1, username, amount, method, status: 'pending' };
+  payments.push(payment);
+  res.json({ success: true, message: 'Payment created', payment });
 });
 
-// GET all orders/payments
+// Get all payments
 router.get('/', (req, res) => {
-  res.json({ orders });
+  res.json({ payments });
 });
 
 module.exports = router;
