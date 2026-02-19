@@ -1,14 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const path = require('path'); // ✅ added for static files
+const path = require('path');
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the public folder
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from root public folder
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Currency rates
 const currencyRates = {
@@ -33,21 +33,20 @@ const baseUSDPrice = {
   user_order: parseFloat(process.env.PRICE_USD_USER_ORDER),
 };
 
-// SMM Providers (for tracking / future API use)
+// SMM Providers
 const providers = {
   SocialSphere: process.env.SOCIALSPHERE_KEY,
   SMMGen: process.env.SMMGEN_KEY,
   GodSMM: process.env.GODSMM_KEY,
 };
 
-// Function to calculate final price (profit depends only on user type)
+// Function to calculate final price
 function getFinalPrice(orderType, country) {
   const usdPrice = baseUSDPrice[orderType] || 1;
   const profitMultiplier = profitUserType[orderType] || 1;
   const rate = currencyRates[country] || 1;
 
-  const finalPrice = usdPrice * profitMultiplier * rate;
-  return finalPrice;
+  return usdPrice * profitMultiplier * rate;
 }
 
 // API Routes
@@ -57,7 +56,7 @@ app.use('/api/services', require('./routes/services'));
 app.use('/api/child', require('./routes/child'));
 app.use('/api/payments', require('./routes/payments'));
 
-// Test route to see final price
+// Test route for price calculation
 app.get('/api/price', (req, res) => {
   const { orderType, country, provider } = req.query;
   if (!orderType || !country || !provider)
@@ -70,9 +69,9 @@ app.get('/api/price', (req, res) => {
   res.json({ orderType, country, provider, finalPrice });
 });
 
-// Catch-all route to serve index.html for frontend
+// Catch-all to serve index.html for frontend
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
