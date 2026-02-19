@@ -1,22 +1,23 @@
 const express = require('express');
 const router = express.Router();
 
-// Example child panel orders
+// Dummy child orders storage
 let childOrders = [];
 
 // Create child order
 router.post('/order', (req, res) => {
-  const { username, order } = req.body;
-  if (!username || !order) return res.status(400).json({ error: 'username and order are required' });
+  const { childUsername, order } = req.body;
+  if (!childUsername || !order)
+    return res.status(400).json({ success: false, message: 'childUsername and order required' });
 
-  const newOrder = { id: childOrders.length + 1, username, order };
+  const newOrder = { id: childOrders.length + 1, childUsername, order, status: 'pending' };
   childOrders.push(newOrder);
-  res.json({ success: true, order: newOrder });
+  res.json({ success: true, message: 'Child order created', order: newOrder });
 });
 
-// GET all child orders
-router.get('/', (req, res) => {
-  res.json({ childOrders });
+// Get all child orders
+router.get('/orders', (req, res) => {
+  res.json({ orders: childOrders });
 });
 
 module.exports = router;
