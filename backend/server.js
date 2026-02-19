@@ -6,9 +6,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-// Serve static files from root public folder
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Currency rates
 const currencyRates = {
@@ -40,39 +38,34 @@ const providers = {
   GodSMM: process.env.GODSMM_KEY,
 };
 
-// Function to calculate final price
+// Final price calculation
 function getFinalPrice(orderType, country) {
   const usdPrice = baseUSDPrice[orderType] || 1;
   const profitMultiplier = profitUserType[orderType] || 1;
   const rate = currencyRates[country] || 1;
-
   return usdPrice * profitMultiplier * rate;
 }
 
-// API Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/services', require('./routes/services'));
-app.use('/api/child', require('./routes/child'));
-app.use('/api/payments', require('./routes/payments'));
+// Routes
+app.use('/api/auth', require('../routes/auth'));
+app.use('/api/users', require('../routes/users'));
+app.use('/api/services', require('../routes/services'));
+app.use('/api/child', require('../routes/child'));
+app.use('/api/payments', require('../routes/payments'));
 
-// Test route for price calculation
+// Test route
 app.get('/api/price', (req, res) => {
   const { orderType, country, provider } = req.query;
   if (!orderType || !country || !provider)
     return res.status(400).json({ error: 'orderType, country, and provider are required' });
-
   if (!providers[provider])
     return res.status(400).json({ error: 'Invalid provider name' });
-
   const finalPrice = getFinalPrice(orderType, country);
   res.json({ orderType, country, provider, finalPrice });
 });
 
-// Catch-all to serve index.html for frontend
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-});
+// Root route for healthcheck
+app.get('/', (req, res) => res.json({ message: 'AshMediaBoost Backend Running 🚀' }));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
