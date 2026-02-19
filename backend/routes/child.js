@@ -1,25 +1,21 @@
 const express = require('express');
 const router = express.Router();
 
-// In-memory storage for child orders
-let childOrders = [];
+let orders = [];
 
-// Create a new child order
+// Create child order
 router.post('/order', (req, res) => {
   const { username, order } = req.body;
-  if (!username || !order) {
-    return res.status(400).json({ success: false, message: 'Username and order are required' });
-  }
+  if (!username || !order) return res.json({ success: false, message: 'Username and order are required' });
 
-  const newOrder = { username, order, createdAt: new Date().toISOString() };
-  childOrders.push(newOrder);
-
+  const newOrder = { username, order, id: orders.length + 1 };
+  orders.push(newOrder);
   res.json({ success: true, message: 'Child order created', order: newOrder });
 });
 
 // Get all child orders
-router.get('/order', (req, res) => {
-  res.json({ orders: childOrders });
+router.get('/', (req, res) => {
+  res.json({ orders });
 });
 
 module.exports = router;
