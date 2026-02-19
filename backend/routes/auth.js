@@ -1,19 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-const admin = { username: "admin", password: "ashimkagabasiraji256" };
-
+// Simple admin login route
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
-  if(username === admin.username && password === admin.password){
-    res.json({ success: true, message: "Logged in as admin" });
-  } else {
-    res.status(401).json({ success: false, message: "Invalid credentials" });
-  }
-});
 
-router.post('/forgot', (req,res)=>{
-  res.json({ success:true, message:"OTP sent to user (placeholder)" });
+  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+    return res.json({ success: true, message: 'Logged in as admin' });
+  }
+
+  res.status(401).json({ success: false, message: 'Invalid credentials' });
 });
 
 module.exports = router;
