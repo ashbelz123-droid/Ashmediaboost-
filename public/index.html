@@ -1,134 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AshMediaBoost Dashboard</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    input { margin: 5px; padding: 5px; }
-    button { padding: 5px 10px; }
-    section { margin-bottom: 30px; }
-    pre { background: #f0f0f0; padding: 10px; }
-  </style>
+<meta charset="UTF-8">
+<title>AshMediaBoost Dashboard</title>
 </head>
 <body>
-
 <h1>AshMediaBoost Dashboard</h1>
 
-<!-- Signup -->
-<section>
-  <h2>Signup</h2>
-  <input id="signup-username" placeholder="Username">
-  <input id="signup-password" placeholder="Password" type="password">
-  <button id="signup-btn">Signup</button>
-  <pre id="signup-response"></pre>
-</section>
+<h2>Admin Login</h2>
+<input id="username" placeholder="Username">
+<input id="password" placeholder="Password" type="password">
+<button onclick="loginAdmin()">Login Admin</button>
+<pre id="loginResult"></pre>
 
-<!-- Admin Login -->
-<section>
-  <h2>Admin Login</h2>
-  <input id="admin-username" placeholder="Admin Username">
-  <input id="admin-password" placeholder="Password" type="password">
-  <button id="admin-login-btn">Login Admin</button>
-  <pre id="admin-login-response"></pre>
-</section>
+<h2>Users</h2>
+<button onclick="getUsers()">Get Users</button>
+<pre id="usersResult"></pre>
 
-<!-- Users List -->
-<section>
-  <h2>Users</h2>
-  <button id="get-users-btn">Get Users</button>
-  <pre id="users-list"></pre>
-</section>
-
-<!-- Services List -->
-<section>
-  <h2>Services</h2>
-  <button id="get-services-btn">Get Services</button>
-  <pre id="services-list"></pre>
-</section>
-
-<!-- Child Panel Order -->
-<section>
-  <h2>Child Panel Order</h2>
-  <input id="child-username" placeholder="Child Username">
-  <input id="child-order" placeholder="Order e.g. 1000 likes">
-  <button id="create-child-order-btn">Create Child Order</button>
-  <pre id="child-order-response"></pre>
-</section>
-
-<!-- All Orders -->
-<section>
-  <h2>All Orders</h2>
-  <button id="get-orders-btn">Get Orders</button>
-  <pre id="orders-list"></pre>
-</section>
+<h2>Services</h2>
+<button onclick="getServices()">Get Services</button>
+<pre id="servicesResult"></pre>
 
 <script>
-  const baseUrl = '';
+async function loginAdmin() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await res.json();
+  document.getElementById('loginResult').innerText = JSON.stringify(data, null, 2);
+}
 
-  // Signup
-  document.getElementById('signup-btn').onclick = () => {
-    fetch(`${baseUrl}/api/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: document.getElementById('signup-username').value,
-        password: document.getElementById('signup-password').value
-      })
-    })
-    .then(res => res.json())
-    .then(data => document.getElementById('signup-response').textContent = JSON.stringify(data, null, 2));
-  };
+async function getUsers() {
+  const res = await fetch('/api/users');
+  const data = await res.json();
+  document.getElementById('usersResult').innerText = JSON.stringify(data, null, 2);
+}
 
-  // Admin Login
-  document.getElementById('admin-login-btn').onclick = () => {
-    fetch(`${baseUrl}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: document.getElementById('admin-username').value,
-        password: document.getElementById('admin-password').value
-      })
-    })
-    .then(res => res.json())
-    .then(data => document.getElementById('admin-login-response').textContent = JSON.stringify(data, null, 2));
-  };
-
-  // Get Users
-  document.getElementById('get-users-btn').onclick = () => {
-    fetch(`${baseUrl}/api/users`)
-      .then(res => res.json())
-      .then(data => document.getElementById('users-list').textContent = JSON.stringify(data, null, 2));
-  };
-
-  // Get Services
-  document.getElementById('get-services-btn').onclick = () => {
-    fetch(`${baseUrl}/api/services`)
-      .then(res => res.json())
-      .then(data => document.getElementById('services-list').textContent = JSON.stringify(data, null, 2));
-  };
-
-  // Create Child Order
-  document.getElementById('create-child-order-btn').onclick = () => {
-    fetch(`${baseUrl}/api/child/order`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: document.getElementById('child-username').value,
-        order: document.getElementById('child-order').value
-      })
-    })
-    .then(res => res.json())
-    .then(data => document.getElementById('child-order-response').textContent = JSON.stringify(data, null, 2));
-  };
-
-  // Get All Orders
-  document.getElementById('get-orders-btn').onclick = () => {
-    fetch(`${baseUrl}/api/child`)
-      .then(res => res.json())
-      .then(data => document.getElementById('orders-list').textContent = JSON.stringify(data, null, 2));
-  };
+async function getServices() {
+  const res = await fetch('/api/services');
+  const data = await res.json();
+  document.getElementById('servicesResult').innerText = JSON.stringify(data, null, 2);
+}
 </script>
-
 </body>
 </html>
