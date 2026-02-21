@@ -2,49 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AshMediaBoost Dashboard</title>
+<title>AshMediaBoost - Login & Signup</title>
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<h1>AshMediaBoost Dashboard</h1>
-
-<h2>Admin Login</h2>
-<input id="username" placeholder="Username">
-<input id="password" placeholder="Password" type="password">
-<button onclick="loginAdmin()">Login Admin</button>
-<pre id="loginResult"></pre>
-
-<h2>Users</h2>
-<button onclick="getUsers()">Get Users</button>
-<pre id="usersResult"></pre>
-
-<h2>Services</h2>
-<button onclick="getServices()">Get Services</button>
-<pre id="servicesResult"></pre>
-
-<script>
-async function loginAdmin() {
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-  const res = await fetch('/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-  const data = await res.json();
-  document.getElementById('loginResult').innerText = JSON.stringify(data, null, 2);
-}
-
-async function getUsers() {
-  const res = await fetch('/api/users');
-  const data = await res.json();
-  document.getElementById('usersResult').innerText = JSON.stringify(data, null, 2);
-}
-
-async function getServices() {
-  const res = await fetch('/api/services');
-  const data = await res.json();
-  document.getElementById('servicesResult').innerText = JSON.stringify(data, null, 2);
-}
-</script>
+<div class="container">
+    <h1>Welcome to <span class="highlight">AshMediaBoost</span> 🚀</h1>
+    <div class="auth-box">
+        <h2>Signup</h2>
+        <input type="text" id="signup-username" placeholder="Username">
+        <input type="password" id="signup-password" placeholder="Password">
+        <button onclick="signup()">Create Account</button>
+    </div>
+    <div class="auth-box">
+        <h2>Login</h2>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+<script src="js/auth.js"></script>
 </body>
 </html>
