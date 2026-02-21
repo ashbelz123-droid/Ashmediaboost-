@@ -1,95 +1,44 @@
-// ===== SELECT ELEMENTS =====
-const signupForm = document.getElementById('signupForm');
-const loginForm = document.getElementById('loginForm');
-const getUsersBtn = document.getElementById('getUsers');
-const getServicesBtn = document.getElementById('getServices');
-const createChildOrderForm = document.getElementById('childOrderForm');
-const getOrdersBtn = document.getElementById('getOrders');
-const output = document.getElementById('output');
-
-// ===== UTILITY =====
-function showResult(data) {
-  output.textContent = JSON.stringify(data, null, 2);
-}
-
-// ===== SIGNUP =====
-if (signupForm) {
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('signupUsername').value;
-    const password = document.getElementById('signupPassword').value;
-    const email = document.getElementById('signupEmail').value;
-
-    const res = await fetch('/api/auth/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, email })
-    });
-
-    const data = await res.json();
-    showResult(data);
-  });
-}
-
-// ===== LOGIN =====
-if (loginForm) {
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
-
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-
-    const data = await res.json();
-    showResult(data);
-  });
-}
-
-// ===== GET USERS =====
-if (getUsersBtn) {
-  getUsersBtn.addEventListener('click', async () => {
-    const res = await fetch('/api/users');
-    const data = await res.json();
-    showResult(data);
-  });
-}
-
-// ===== GET SERVICES =====
-if (getServicesBtn) {
-  getServicesBtn.addEventListener('click', async () => {
+async function loadServices() {
     const res = await fetch('/api/services');
     const data = await res.json();
-    showResult(data);
-  });
-}
+    const container = document.getElementById('services');
+    container.innerHTML = '';
 
-// ===== CREATE CHILD ORDER =====
-if (createChildOrderForm) {
-  createChildOrderForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const childUsername = document.getElementById('childUsername').value;
-    const order = document.getElementById('childOrder').value;
+    data.services.forEach(service => {
+        const box = document.createElement('div');
+        box.className = 'service-box';
+        box.innerHTML = `
+            <h3>${service.service} on ${service.platform} <img src="icons/${service.platform.toLowerCase()}.png" alt="${service.platform}" style="width:20px;height:20px;"></h3>
+            <p>Price: <span id="price-${service._id}">Calculating...</span> UGX</p>
+            <p>Provider Tier: ${service.providerBox}</p>
+            <img src="flags/${service.platform_country || 'ugx'}.png" style="width:25px; height:15px;" title="Service country">
+            <button onclick="placeOrder('${service._id}','${service.providerBox}')">Order Now</button>
+        `;
+        container.appendChild(box);
 
-    const res = await fetch('/api/child/order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ childUsername, order })
+        // Fetch live price dynamically
+        fetch(`/api/orders/createPrice?serviceId=${service._id}`)
+            .then(r=>r.json())
+            .then(p => document.getElementById(`price-${service._id}`).innerText = p.priceUGX);
     });
-
-    const data = await res.json();
-    showResult(data);
-  });
 }
 
-// ===== GET ORDERS =====
-if (getOrdersBtn) {
-  getOrdersBtn.addEventListener('click', async () => {
-    const res = await fetch('/api/child/orders');
+async function placeOrder(serviceId, box) {
+    const quantity = prompt('Enter quantity (e.g., 1000):');
+    if(!quantity) return;
+
+    const res = await fetch('/api/orders/create', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+            userId: 'CURRENT_USER_ID', // you can fetch from session/localStorage
+            serviceId,
+            box,
+            quantity
+        })
+    });
     const data = await res.json();
-    showResult(data);
-  });
+    alert(data.message);
 }
+
+document.addEventListener('DOMContentLoaded', loadServices);
