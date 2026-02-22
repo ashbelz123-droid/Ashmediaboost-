@@ -1,26 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>AshMediaBoost - Login & Signup</title>
-<link rel="stylesheet" href="css/styles.css">
+<title>AshMediaBoost</title>
+<link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
-<div class="container">
-    <h1>Welcome to <span class="highlight">AshMediaBoost</span> 🚀</h1>
-    <div class="auth-box">
-        <h2>Signup</h2>
-        <input type="text" id="signup-username" placeholder="Username">
-        <input type="password" id="signup-password" placeholder="Password">
-        <button onclick="signup()">Create Account</button>
-    </div>
-    <div class="auth-box">
-        <h2>Login</h2>
-        <input type="text" id="login-username" placeholder="Username">
-        <input type="password" id="login-password" placeholder="Password">
-        <button onclick="login()">Login</button>
-    </div>
+
+<h1 class="title">🚀 AshMediaBoost Panel</h1>
+
+<div class="card">
+<h2>Signup</h2>
+<input id="username" placeholder="Username">
+<input id="password" placeholder="Password">
+<button onclick="signup()">Signup</button>
 </div>
-<script src="js/auth.js"></script>
+
+<div class="providers">
+
+<div class="box premium">Premium 🚀</div>
+<div class="box moderate">Moderate ⚡</div>
+<div class="box basic">Basic 💰</div>
+
+</div>
+
+<script src="/js/auth.js"></script>
 </body>
 </html>
