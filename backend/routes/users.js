@@ -1,10 +1,8 @@
-module.exports = (users) => {
-  const express = require('express');
-  const router = express.Router();
+const mongoose = require("mongoose");
 
-  router.get('/', (req, res) => {
-    res.json({ users });
-  });
+const UserSchema = new mongoose.Schema({
+    username: String,
+    password: String
+});
 
-  return router;
-};
+module.exports = mongoose.model("User", UserSchema);
