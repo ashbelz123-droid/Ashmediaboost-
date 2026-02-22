@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Orders</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<div class="main">
+
+<h2>Orders Management</h2>
+
+<div id="orders"></div>
+
+</div>
+
+<script>
+
+async function loadOrders(){
+
+const res = await fetch("/api/admin/orders");
+const data = await res.json();
+
+let html = "";
+
+data.orders.forEach(order=>{
+html += `
+<div class="card">
+<p>Package: ${order.package || order.box}</p>
+<p>Status: ${order.status}</p>
+<button onclick="approve('${order._id}')">Approve</button>
+</div>
+`;
+});
+
+document.getElementById("orders").innerHTML = html;
+}
+
+async function approve(id){
+await fetch("/api/admin/approve/"+id,{method:"POST"});
+alert("Approved");
+location.reload();
+}
+
+loadOrders();
+
+</script>
+
+</body>
+</html>
