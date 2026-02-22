@@ -1,20 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>AshMediaBoost Dashboard</title>
-<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="container">
-    <h1>Your <span class="highlight">AshMediaBoost</span> Dashboard</h1>
-    <div class="boxes">
-        <div class="box premium">Premium Box<br>High-tier services 🚀</div>
-        <div class="box moderate">Moderate Box<br>Balanced speed & cost ⚡</div>
-        <div class="box basic">Basic Box<br>Budget-friendly 💰</div>
-    </div>
-    <div id="services"></div>
-</div>
-<script src="js/dashboard.js"></script>
+
+<h2>Select Package</h2>
+
+<div class="box" onclick="createOrder('Premium',10000)">Premium</div>
+<div class="box" onclick="createOrder('Moderate',7000)">Moderate</div>
+<div class="box" onclick="createOrder('Basic',4000)">Basic</div>
+
+<script src="js/app.js"></script>
 </body>
 </html>
