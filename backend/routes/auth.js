@@ -1,18 +1,16 @@
-module.exports = (adminCredentials) => {
-  const express = require('express');
-  const router = express.Router();
+const router = require("express").Router();
+const User = require("../models/User");
 
-  // Admin login
-  router.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password)
-      return res.json({ success: false, message: 'Username and password are required' });
+router.post("/signup",async(req,res)=>{
+ const user = new User(req.body);
+ await user.save();
+ res.json({success:true,message:"Account created"});
+});
 
-    if (username === adminCredentials.username && password === adminCredentials.password) {
-      return res.json({ success: true, message: 'Logged in as admin' });
-    }
-    return res.json({ success: false, message: 'Invalid credentials' });
-  });
+router.post("/login",async(req,res)=>{
+ const user = await User.findOne(req.body);
+ if(!user) return res.json({success:false});
+ res.json({success:true,user});
+});
 
-  return router;
-};
+module.exports = router;
