@@ -1,16 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<title>AshMediaBoost Dashboard</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#0f172a;
+    color:white;
+}
+
+/* Sidebar */
+
+.sidebar{
+    width:220px;
+    height:100vh;
+    background:#020617;
+    position:fixed;
+    padding:20px;
+}
+
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    color:#38bdf8;
+    margin-bottom:30px;
+}
+
+/* Menu */
+
+.menu{
+    display:block;
+    padding:12px;
+    color:white;
+    text-decoration:none;
+    border-radius:8px;
+    margin-bottom:10px;
+    background:#0f172a;
+}
+
+.menu:hover{
+    background:#38bdf8;
+}
+
+/* Main Content */
+
+.main{
+    margin-left:240px;
+    padding:30px;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:#020617;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 0 15px rgba(0,0,0,0.3);
+}
+
+.card h2{
+    color:#38bdf8;
+}
+
+.package-btn{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#38bdf8;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.package-btn:hover{
+    background:#0ea5e9;
+}
+
+</style>
 </head>
+
 <body>
 
-<h2>Select Package</h2>
+<div class="sidebar">
+<div class="logo">🚀 AshMediaBoost</div>
 
-<div class="box" onclick="createOrder('Premium',10000)">Premium</div>
-<div class="box" onclick="createOrder('Moderate',7000)">Moderate</div>
-<div class="box" onclick="createOrder('Basic',4000)">Basic</div>
+<a class="menu" href="#">Dashboard</a>
+<a class="menu" href="#">Orders</a>
+<a class="menu" href="#">Profile</a>
+<a class="menu" href="#">Logout</a>
+</div>
 
-<script src="js/app.js"></script>
+<div class="main">
+
+<h1>Welcome Back 👋</h1>
+
+<div class="cards">
+
+<div class="card">
+<h2>Premium Package</h2>
+<p>High engagement service</p>
+<button class="package-btn">Order Now</button>
+</div>
+
+<div class="card">
+<h2>Moderate Package</h2>
+<p>Balanced growth service</p>
+<button class="package-btn">Order Now</button>
+</div>
+
+<div class="card">
+<h2>Basic Package</h2>
+<p>Starter service</p>
+<button class="package-btn">Order Now</button>
+</div>
+
+</div>
+
+</div>
+
 </body>
-</html>
+  </html>
