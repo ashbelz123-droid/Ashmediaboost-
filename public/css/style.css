@@ -4,33 +4,20 @@ background:#f5f7fb;
 text-align:center;
 }
 
-.title{
-color:#ff3c00;
-}
-
 .card{
 background:white;
 width:300px;
-margin:auto;
+margin:50px auto;
 padding:20px;
 border-radius:15px;
 box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
 
-.providers{
-display:flex;
-justify-content:center;
-margin-top:30px;
-gap:20px;
-}
-
 .box{
-padding:30px;
-border-radius:15px;
-color:black;
-font-weight:bold;
+background:#ffffff;
+margin:20px;
+padding:20px;
+border-radius:10px;
+cursor:pointer;
+box-shadow:0 0 5px rgba(0,0,0,0.1);
 }
-
-.premium{background:#ffd700;}
-.moderate{background:#00bfff;}
-.basic{background:#90ee90;}
