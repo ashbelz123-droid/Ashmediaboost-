@@ -1,58 +1,46 @@
-body{
-margin:0;
-font-family:Arial;
-background:#0f172a;
-color:white;
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+  margin: 0;
 }
 
-.center-box{
-width:320px;
-margin:80px auto;
-background:#020617;
-padding:30px;
-border-radius:15px;
-box-shadow:0 0 20px rgba(0,0,0,0.4);
+header {
+  background: #111;
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
 }
 
-input{
-width:100%;
-padding:12px;
-margin-top:15px;
-border-radius:8px;
-border:none;
+nav a {
+  color: white;
+  margin-left: 15px;
+  text-decoration: none;
 }
 
-button{
-width:100%;
-padding:12px;
-margin-top:20px;
-background:#38bdf8;
-border:none;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
+.form-container {
+  width: 300px;
+  margin: 100px auto;
+  background: white;
+  padding: 20px;
 }
 
-button:hover{
-background:#0ea5e9;
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
 }
 
-.sidebar{
-width:220px;
-height:100vh;
-position:fixed;
-background:#020617;
-padding:20px;
+button {
+  margin-top: 10px;
+  padding: 10px;
+  background: #0077ff;
+  color: white;
+  border: none;
 }
 
-.main{
-margin-left:240px;
-padding:30px;
-}
-
-.card{
-background:#020617;
-padding:25px;
-border-radius:15px;
-margin:15px;
+.dashboard-card {
+  background: white;
+  padding: 20px;
+  margin: 20px;
 }
