@@ -1,39 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard</title>
-<link rel="stylesheet" href="/css/style.css">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="sidebar">
-<h2>🚀 Panel</h2>
+<h2>User Dashboard</h2>
 
-<button onclick="logout()">Logout</button>
+<div class="dashboard-card">
+  <h3>Create Order</h3>
+
+  <select id="service">
+    <option>Instagram Followers</option>
+    <option>TikTok Likes</option>
+    <option>YouTube Views</option>
+  </select>
+
+  <input type="number" id="quantity" placeholder="Quantity">
+  <button onclick="createOrder()">Submit Order</button>
 </div>
 
-<div class="main">
-
-<h2>Packages</h2>
-
-<div class="card">
-<h3>Premium Package</h3>
-<button>Order Now</button>
+<div class="dashboard-card">
+  <h3>My Orders</h3>
+  <button onclick="loadOrders()">Refresh Orders</button>
+  <ul id="ordersList"></ul>
 </div>
 
-<div class="card">
-<h3>Moderate Package</h3>
-<button>Order Now</button>
-</div>
-
-<div class="card">
-<h3>Basic Package</h3>
-<button>Order Now</button>
-</div>
-
-</div>
-
-<script src="/js/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
