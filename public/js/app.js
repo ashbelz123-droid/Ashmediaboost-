@@ -1,40 +1,78 @@
-async function signup(){
+const API_URL = "http://localhost:3000/api";
 
-const username = document.getElementById("username").value;
-const password = document.getElementById("password").value;
+// REGISTER
+async function register() {
+  const email = document.getElementById("regEmail").value;
+  const password = document.getElementById("regPassword").value;
 
-await fetch("/api/auth/signup",{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body:JSON.stringify({username,password})
-});
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
 
-alert("Account created");
-location.href="/login.html";
+  const data = await res.json();
+  document.getElementById("regMessage").innerText = data.message;
 }
 
-async function login(){
+// LOGIN
+async function login() {
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
 
-const username = document.getElementById("username").value;
-const password = document.getElementById("password").value;
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
 
-const res = await fetch("/api/auth/login",{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body:JSON.stringify({username,password})
-});
+  const data = await res.json();
 
-const data = await res.json();
-
-if(data.success){
-localStorage.setItem("user",JSON.stringify(data.user));
-location.href="/dashboard.html";
-}else{
-alert("Login failed");
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+    window.location.href = "dashboard.html";
+  } else {
+    document.getElementById("loginMessage").innerText = data.message;
+  }
 }
+
+// CREATE ORDER
+async function createOrder() {
+  const service = document.getElementById("service").value;
+  const quantity = document.getElementById("quantity").value;
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API_URL}/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": token
+    },
+    body: JSON.stringify({ service, quantity })
+  });
+
+  const data = await res.json();
+  alert(data.message);
 }
 
-function logout(){
-localStorage.clear();
-location.href="/";
+// LOAD ORDERS
+async function loadOrders() {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API_URL}/orders/my`, {
+    headers: {
+      "Authorization": token
+    }
+  });
+
+  const orders = await res.json();
+
+  const list = document.getElementById("ordersList");
+  list.innerHTML = "";
+
+  orders.forEach(order => {
+    const li = document.createElement("li");
+    li.innerText = `${order.service} - ${order.quantity} - ${order.status}`;
+    list.appendChild(li);
+  });
 }
