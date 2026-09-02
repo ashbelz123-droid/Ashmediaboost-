@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{const y=document.getElementById('year');if(y)y.textContent=new Date().getFullYear();const link=document.getElementById('quick-link');if(link){link.addEventListener('input',()=>{link.setCustomValidity(link.value&&!/^https?:\/\//i.test(link.value)?'Enter a valid public URL beginning with http:// or https://':'')})}});
