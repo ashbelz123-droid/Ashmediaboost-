@@ -1,50 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>AshMediaBoost</title>
-<style>
-body{
-font-family: Arial;
-background:#0f172a;
-color:white;
-text-align:center;
-}
-.container{
-margin-top:100px;
-}
-button{
-padding:10px 20px;
-background:#22c55e;
-border:none;
-color:white;
-font-size:16px;
-border-radius:5px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="AshMediaBoost — social media marketing services with transparent pricing and order tracking.">
+  <title>AshMediaBoost — Social Media Growth</title>
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
-
 <body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="AshMediaBoost home">
+        <span class="brand-mark">A</span>
+        <span>AshMedia<span>Boost</span></span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#services">Services</a>
+        <a href="#how">How it works</a>
+        <a href="login.html">Login</a>
+      </nav>
+      <a class="btn btn-small btn-primary" href="register.html">Get Started</a>
+    </header>
 
-<div class="container">
-<h1>AshMediaBoost</h1>
-<p>Fast Social Media Growth Services</p>
+    <main>
+      <section class="hero section-pad">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="status-dot"></span> Social media marketing platform</div>
+          <h1>Grow your social presence with <span>simple, transparent orders.</span></h1>
+          <p class="hero-text">Choose a service, enter your public profile or post link, and track your order from one clean dashboard.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="register.html">Create free account</a>
+            <a class="btn btn-ghost" href="#services">Explore services</a>
+          </div>
+          <div class="trust-row">
+            <span>✓ Secure account access</span>
+            <span>✓ Clear pricing</span>
+            <span>✓ Order tracking</span>
+          </div>
+        </div>
 
-<h3>Order Services</h3>
+        <div class="hero-card glass-card">
+          <div class="card-topline"><span>Quick order</span><span class="live-pill">READY</span></div>
+          <label for="quick-service">Service</label>
+          <select id="quick-service" class="field">
+            <option>Instagram Followers</option>
+            <option>TikTok Likes</option>
+            <option>YouTube Views</option>
+          </select>
+          <label for="quick-link">Target link</label>
+          <input id="quick-link" class="field" type="url" placeholder="https://instagram.com/..." autocomplete="url">
+          <div class="mini-info"><span>Account required</span><span>Pricing shown before checkout</span></div>
+          <a class="btn btn-primary btn-block" href="register.html">Continue to account</a>
+          <p class="fine-print">Orders are processed only after the service, target and final price are confirmed.</p>
+        </div>
+      </section>
 
-<select>
-<option>Instagram Followers</option>
-<option>TikTok Likes</option>
-<option>YouTube Views</option>
-</select>
+      <section id="services" class="section-pad section-dark">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Marketplace</div>
+            <h2>Services built for everyday creators</h2>
+          </div>
+          <a class="text-link" href="register.html">View marketplace →</a>
+        </div>
+        <div class="service-grid">
+          <article class="service-card">
+            <div class="service-icon ig">IG</div>
+            <h3>Instagram</h3>
+            <p>Followers, likes, views and other supported marketing services.</p>
+            <span>Browse services →</span>
+          </article>
+          <article class="service-card">
+            <div class="service-icon tt">TT</div>
+            <h3>TikTok</h3>
+            <p>Marketing options for eligible public profiles and content.</p>
+            <span>Browse services →</span>
+          </article>
+          <article class="service-card">
+            <div class="service-icon yt">YT</div>
+            <h3>YouTube</h3>
+            <p>Supported views, engagement and channel marketing services.</p>
+            <span>Browse services →</span>
+          </article>
+        </div>
+      </section>
 
-<br><br>
+      <section id="how" class="section-pad">
+        <div class="section-heading centered">
+          <div class="eyebrow">Simple workflow</div>
+          <h2>From signup to order in minutes</h2>
+        </div>
+        <div class="steps">
+          <div class="step"><b>01</b><h3>Create an account</h3><p>Keep orders, wallet activity and support in one place.</p></div>
+          <div class="step"><b>02</b><h3>Choose a service</h3><p>Review the service details, quantity limits and customer price.</p></div>
+          <div class="step"><b>03</b><h3>Place & track</h3><p>Submit the target and monitor the order status from your dashboard.</p></div>
+        </div>
+      </section>
 
-<input placeholder="Enter Link">
+      <section class="cta section-pad">
+        <div class="cta-inner">
+          <div><div class="eyebrow">AshMediaBoost</div><h2>Ready to build your social presence?</h2><p>Start with a free account. You can review available services before spending anything.</p></div>
+          <a class="btn btn-primary" href="register.html">Create account</a>
+        </div>
+      </section>
+    </main>
 
-<br><br>
-
-<button>Place Order</button>
-</div>
-
+    <footer class="footer">
+      <span>© <span id="year"></span> AshMediaBoost</span>
+      <div><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Support</a></div>
+    </footer>
+  </div>
+  <script src="assets/js/app.js"></script>
 </body>
-  </html>
+</html>
