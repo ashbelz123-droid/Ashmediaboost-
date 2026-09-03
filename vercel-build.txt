@@ -1,0 +1,2 @@
+AshMediaBoost static deployment marker
+This project is intentionally deployed as static HTML/CSS/JS until the secure backend/API layer is added.
