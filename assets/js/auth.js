@@ -34,18 +34,16 @@
     if (password.length < 8) return show('Password must be at least 8 characters.');
     busy(form, true, 'Creating account…'); show('Creating your account securely…', 'info');
     try {
-      const { data, error } = await client.auth.signUp({ email, password, options: { data: { full_name: fullName, referral_code_input: referral || null }, emailRedirectTo: `${location.origin}/login.html` } });
+      const { data, error } = await client.auth.signUp({ email, password, options: { data: { full_name: fullName, referral_code_input: referral || null }, emailRedirectTo: `${location.origin}/login.html?next=dashboard.html` } });
       if (error) throw error;
       if (!data.session) {
-        show('Your account needs email confirmation before we can open the dashboard.', 'error');
+        show('Account created. We sent a confirmation link to your email. Open it to activate your account, then sign in to continue to your dashboard.', 'success');
+        form.reset();
         return;
       }
       show('Account created. Setting up your dashboard…', 'info');
       const ready = await waitForBackendSetup(data.user.id);
-      if (!ready) {
-        show('Account created. Your dashboard is still being prepared. Please try again in a moment.', 'error');
-        return;
-      }
+      if (!ready) return show('Account created, but your dashboard is still being prepared. Please sign in again shortly.');
       location.replace('dashboard.html');
     } catch (e) { show(e?.message || 'Could not create the account. Please try again.'); }
     finally { busy(form, false); }
@@ -54,15 +52,19 @@
     if (!client) return show('Secure connection is not ready. Refresh the page.');
     const d = new FormData(form), email = String(d.get('email') || '').trim().toLowerCase(), password = String(d.get('password') || '');
     busy(form, true, 'Signing in…'); show('Signing you in securely…', 'info');
-    try { const { error } = await client.auth.signInWithPassword({ email, password }); if (error) throw error; location.replace(nextPage()); }
-    catch (e) { show(e?.message || 'Sign in failed. Check your email and password.'); }
+    try {
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      if (!data.session) throw new Error('Email confirmation is still required. Open the confirmation link sent to your email.');
+      location.replace(nextPage());
+    } catch (e) { show(e?.message || 'Sign in failed. Check your email and password.'); }
     finally { busy(form, false); }
   }
   async function resetPassword() {
-    if (!client) return show('Secure connection is not ready. Refresh the page.');
+    if (!client) return show('Secure connection is not ready. Please refresh.');
     const email = String($('email')?.value || '').trim().toLowerCase();
     if (!email) return show('Enter your email address first.');
-    try { const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/login.html` }); if (error) throw error; show('If that email has an account, a password-reset link has been sent.', 'success'); }
+    try { const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/login.html?next=dashboard.html` }); if (error) throw error; show('If that email has an account, a password-reset link has been sent.', 'success'); }
     catch (e) { show(e?.message || 'Could not send the reset email.'); }
   }
   function setup() {
