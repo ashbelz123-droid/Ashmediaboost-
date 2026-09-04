@@ -1,13 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">AshMediaBoost</title>
-  <desc id="desc">AshMediaBoost green A mark on a dark rounded square</desc>
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#071a2f"/>
-      <stop offset="1" stop-color="#0b2940"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="112" fill="url(#g)"/>
-  <path d="M256 91 104 407h83l24-55h90l24 55h83L256 91Zm0 113 25 88h-50l25-88Z" fill="#00d26a"/>
-  <path d="M318 102c36 14 68 36 91 65" fill="none" stroke="#00d26a" stroke-width="18" stroke-linecap="round" opacity=".85"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc"><title id="title">AshMediaBoost logo</title><desc id="desc">Rocket launching through colorful growth bars</desc><defs><linearGradient id="bg" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#050713"/><stop offset="1" stop-color="#0b1025"/></linearGradient><linearGradient id="s" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#16a8ff"/><stop offset=".45" stop-color="#704cff"/><stop offset=".75" stop-color="#f332a1"/><stop offset="1" stop-color="#ff9418"/></linearGradient><linearGradient id="r" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#dbe8f6"/><stop offset=".65" stop-color="#fff"/><stop offset="1" stop-color="#ff9b19"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#bg)"/><path d="M101 357c-18-52 9-111 58-138 4 47 18 81 42 108-34 7-68 19-100 30Z" fill="url(#s)"/><rect x="271" y="302" width="35" height="83" rx="7" fill="#d83da8"/><rect x="316" y="263" width="35" height="122" rx="7" fill="#9b4cff"/><rect x="361" y="214" width="35" height="171" rx="7" fill="#ff8d19"/><path d="M118 391c79 18 185 6 281-61 25-18 43-39 52-61" fill="none" stroke="url(#s)" stroke-width="19" stroke-linecap="round"/><path d="M189 324c-29-43-25-103 14-160 30-44 64-66 92-73 2 29-8 70-35 113-22 35-46 61-71 79Z" fill="url(#r)" stroke="#18233a" stroke-width="8"/><path d="M261 103c20-6 34-8 46-7 0 18-5 37-14 55l-34-48Z" fill="#ff8917"/><ellipse cx="267" cy="188" rx="25" ry="28" fill="#12213a" stroke="#d6e5f4" stroke-width="8"/><circle cx="273" cy="181" r="10" fill="#7f96b4"/><path d="M207 292c-24-3-43 3-62 17 10 21 25 32 47 38 12-20 17-37 15-55Z" fill="#ff5a13"/><path d="M214 315c-6 30-22 48-48 62 4-24 1-43-8-57 18-11 36-13 56-5Z" fill="#ff9a16"/><path d="M208 334c-2 27-14 46-37 60 7-22 6-39-1-53 13-9 26-11 38-7Z" fill="#ffd34a"/></svg>
