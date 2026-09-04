@@ -1,1 +1,29 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070711"><link rel="icon" type="image/svg+xml" href="assets/logo.svg"><link rel="stylesheet" href="assets/css/style.css"><title>Login — AshMediaBoost</title></head><body><main class="auth-page section-pad"><a class="brand auth-top-brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt="AshMediaBoost logo"><span>AshMedia<span>Boost</span></span></a><section class="auth-card glass-card"><div class="auth-tabs"><a class="selected" href="login.html">Sign in</a><a href="register.html">Create account</a></div><div class="eyebrow">WELCOME BACK</div><h1>Keep your growth <span>moving.</span></h1><p class="muted">Access your orders, wallet, rewards and support from one account.</p><form id="loginForm"><label for="email">Email address</label><input id="email" class="field" name="email" type="email" required autocomplete="email" placeholder="you@example.com"><label for="password">Password</label><div class="password-field"><input id="password" class="field" name="password" type="password" required autocomplete="current-password" placeholder="Your password"><button type="button" id="togglePassword">Show</button></div><div class="form-row"><label class="check"><input type="checkbox" name="remember"> Remember me</label><a class="text-link" href="#">Forgot password?</a></div><button class="btn btn-primary btn-block" type="submit">Sign in</button><p id="formMessage" class="form-message" role="alert"></p></form><p class="auth-switch">New here? <a href="register.html">Create an account</a></p><div class="guest-box"><strong>Ordering without an account?</strong><span>You can use the guest order flow when it is enabled.</span><a href="marketplace.html">Browse marketplace →</a></div></section></main><script>const f=document.getElementById('loginForm'),m=document.getElementById('formMessage'),p=document.getElementById('password'),t=document.getElementById('togglePassword');t.onclick=()=>{const s=p.type==='password';p.type=s?'text':'password';t.textContent=s?'Hide':'Show'};f.addEventListener('submit',e=>{e.preventDefault();m.textContent='Account backend is not connected yet. Your credentials were not submitted.';m.className='form-message warning'});</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070711"><link rel="icon" type="image/svg+xml" href="assets/logo.svg"><link rel="stylesheet" href="assets/css/style.css">
+<title>Login — AshMediaBoost</title>
+<style>
+.auth-page{min-height:100svh;display:grid;place-items:center;padding:24px 16px;background:radial-gradient(circle at 15% 10%,rgba(78,70,255,.18),transparent 34%),radial-gradient(circle at 90% 85%,rgba(255,133,36,.13),transparent 30%)}
+.login-wrap{width:min(100%,430px)}.login-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:22px;font-size:1.25rem;font-weight:900}.login-logo img{width:42px;height:42px}.login-logo span span{color:#ff8a24}
+.auth-card{padding:28px 22px;border-radius:28px}.auth-card h1{font-size:clamp(2rem,8vw,2.7rem);line-height:1.04;margin:10px 0 12px}.auth-card h1 span{color:#ff8a24}.auth-sub{line-height:1.55;margin-bottom:24px}.field{min-height:54px}.password-field{position:relative}.password-field .field{padding-right:72px}.password-field button{position:absolute;right:10px;top:10px;height:34px;padding:0 12px;border:0;border-radius:10px;background:#171827;color:#cfd3df;font-weight:700}.form-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:14px 0 20px}.text-link{color:#ff9b43;font-weight:700}.form-message{min-height:24px;margin:14px 0 0;line-height:1.4}.form-message.info{color:#b9c6ff}.form-message.success{color:#56e69a}.form-message.error{color:#ff8b8b}.security-note{display:flex;gap:9px;align-items:flex-start;margin-top:20px;padding:12px 13px;border:1px solid rgba(255,255,255,.08);border-radius:15px;color:#9298a8;font-size:.82rem;line-height:1.45}.auth-switch{text-align:center;margin-top:20px}.guest-box{margin-top:20px}
+</style>
+</head>
+<body>
+<main class="auth-page"><div class="login-wrap">
+<a class="login-logo" href="index.html"><img src="assets/logo.svg" alt="AshMediaBoost logo"><span>AshMedia<span>Boost</span></span></a>
+<section class="auth-card glass-card">
+<div class="eyebrow">WELCOME BACK</div><h1>Keep your growth <span>moving.</span></h1><p class="muted auth-sub">Sign in securely to manage your orders, wallet, rewards and support.</p>
+<form id="loginForm" novalidate>
+<label for="email">Email address</label><input id="email" class="field" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+<label for="password">Password</label><div class="password-field"><input id="password" class="field" name="password" type="password" required autocomplete="current-password" placeholder="Your password"><button type="button" id="togglePassword">Show</button></div>
+<div class="form-row"><label class="check"><input type="checkbox" name="remember"> Remember me</label><a id="forgotPassword" class="text-link" href="#">Forgot password?</a></div>
+<button class="btn btn-primary btn-block" type="submit">Sign in</button><p id="formMessage" class="form-message" role="alert" aria-live="polite"></p>
+</form>
+<div class="security-note"><span>🔒</span><span>Your password is handled by Supabase Auth. AshMediaBoost does not store your password in its own tables.</span></div>
+<p class="auth-switch">New here? <a href="register.html">Create an account</a></p>
+<div class="guest-box"><strong>Want to order without an account?</strong><span>You can browse the marketplace and use guest checkout when enabled.</span><a href="marketplace.html">Browse marketplace →</a></div>
+</section></div></main>
+<script src="assets/js/supabase-config.js"></script><script src="assets/js/auth.js"></script>
+</body></html>
