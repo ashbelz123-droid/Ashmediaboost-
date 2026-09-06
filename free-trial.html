@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070711">
+<meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
 <link rel="stylesheet" href="assets/css/style.css">
 <title>Free Trial — AshMediaBoost</title>
@@ -19,20 +20,20 @@
 <section class="section-pad trial-hero">
 <div class="eyebrow">LIMITED FREE TRIAL</div>
 <h1>Get a little <span>boost.</span></h1>
-<p class="hero-text">A limited guest views promotion may be available without an account. Availability and eligibility are checked by the secure backend before a claim is accepted.</p>
+<p class="hero-text">Guest access is limited to one eligible views service. The secure backend selects the cheapest eligible views service from the connected provider and checks availability before a claim is accepted.</p>
 <div class="trial-meter" aria-live="polite">
 <div class="meter-head"><strong>Guest trial pool</strong><span id="poolStatus">Checking availability</span></div>
 <div class="meter-track"><span id="meterBar" style="width:0%"></span></div>
-<small id="poolNote">Live quota information will appear when the trial backend is connected. No remaining capacity is invented on this page.</small>
+<small id="poolNote">Checking the live promotion. No service, price or remaining capacity is invented on this page.</small>
 </div>
 </section>
 <section class="section-pad">
 <div class="trial-grid">
-<article class="glass-card trial-card">
-<div class="service-icon">G</div><div class="eyebrow">GUEST</div><h2>Views trial</h2>
-<p>One small eligible views promotion per visitor/promotion when capacity is available.</p>
-<ul><li>Small quantity</li><li>Public target required</li><li>Anti-abuse checks</li><li>Global quota enforced</li></ul>
-<a class="btn btn-primary btn-block" href="order.html?mode=free">Try free views</a>
+<article class="glass-card trial-card" id="guestTrialCard">
+<div class="service-icon">G</div><div class="eyebrow">GUEST</div><h2>Cheapest eligible views</h2>
+<p id="trialServiceText">The available trial service is selected automatically from the connected provider. You cannot choose a different provider service for the guest trial.</p>
+<ul><li>Views only</li><li>Cheapest eligible provider service</li><li>Small quantity within provider limits</li><li>Public target required</li><li>Anti-abuse and global quota checks</li></ul>
+<a class="btn btn-primary btn-block" id="trialAction" href="order.html?mode=free" aria-disabled="true">Check trial</a>
 </article>
 <article class="glass-card trial-card" data-member-only hidden>
 <div class="service-icon">★</div><div class="eyebrow">MEMBER</div><h2>Member Free Drops</h2>
@@ -51,9 +52,9 @@
 <section class="section-pad section-dark">
 <div class="section-heading"><div><div class="eyebrow">HOW IT WORKS</div><h2>Fair access, controlled server-side.</h2></div></div>
 <div class="steps">
-<div class="step"><b>01</b><h3>Choose</h3><p>Select the eligible free views trial or a live member drop.</p></div>
-<div class="step"><b>02</b><h3>Verify</h3><p>The server checks the promotion, target and abuse limits before accepting a claim.</p></div>
-<div class="step"><b>03</b><h3>Claim</h3><p>When the limited pool is full, new claims are automatically stopped.</p></div>
+<div class="step"><b>01</b><h3>Choose</h3><p>The system selects the cheapest eligible views service from the connected provider.</p></div>
+<div class="step"><b>02</b><h3>Verify</h3><p>The server checks the promotion, provider service limits, target and abuse controls before accepting a claim.</p></div>
+<div class="step"><b>03</b><h3>Claim</h3><p>When the limited pool or eligible service is unavailable, new claims are stopped instead of using a made-up service.</p></div>
 </div>
 </section>
 <section class="section-pad"><div class="hunt-card"><div class="eyebrow">WEEKEND HUNT</div><h2>Keep an eye on the drops.</h2><p>Limited promotions can appear during selected weekends. Official announcements and the Free Drops page are the safest place to check.</p><a class="btn btn-primary" href="free.html">View Free Drops</a></div></section>
@@ -64,5 +65,56 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/customer-mode.js"></script>
 <script src="assets/js/app.js"></script>
+<script>
+(() => {
+  const action = document.getElementById('trialAction');
+  const status = document.getElementById('poolStatus');
+  const note = document.getElementById('poolNote');
+  const text = document.getElementById('trialServiceText');
+  const bar = document.getElementById('meterBar');
+  if (!action || !status || !note || !text || !bar) return;
+
+  // The browser never selects or invents a provider service. The server endpoint
+  // will be responsible for returning the currently eligible cheapest views trial.
+  const setUnavailable = (message) => {
+    action.setAttribute('aria-disabled', 'true');
+    action.classList.add('disabled');
+    action.href = '#';
+    action.textContent = 'Trial unavailable';
+    status.textContent = 'Unavailable';
+    note.textContent = message;
+    text.textContent = 'There is no verified eligible views trial available right now.';
+    bar.style.width = '0%';
+  };
+
+  const loadTrial = async () => {
+    try {
+      const response = await fetch('/api/free-trial', { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+      if (!response.ok) throw new Error('Trial service unavailable');
+      const data = await response.json();
+      if (!data || data.available !== true) {
+        setUnavailable(data?.message || 'No eligible trial is available right now.');
+        return;
+      }
+      const remaining = Number(data.remaining);
+      const total = Number(data.limit);
+      status.textContent = Number.isFinite(remaining) ? `${remaining.toLocaleString('en-UG')} left` : 'Available';
+      if (Number.isFinite(remaining) && Number.isFinite(total) && total > 0) {
+        bar.style.width = `${Math.max(0, Math.min(100, (remaining / total) * 100))}%`;
+      }
+      note.textContent = 'Eligibility and final claim checks are enforced by the secure backend.';
+      text.textContent = 'A verified eligible views service has been found. The backend keeps the provider service ID private and selects the lowest provider cost that meets the trial rules.';
+      action.removeAttribute('aria-disabled');
+      action.classList.remove('disabled');
+      action.href = 'order.html?mode=free';
+      action.textContent = 'Try free views';
+    } catch (error) {
+      setUnavailable('The live trial checker could not be reached. Please try again later.');
+    }
+  };
+
+  loadTrial();
+})();
+</script>
 </body>
 </html>
