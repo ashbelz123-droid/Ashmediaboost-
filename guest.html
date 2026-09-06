@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070711">
+<meta name="description" content="AshMediaBoost guest workspace for orders, tracking and free drops.">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+<title>Guest Workspace — AshMediaBoost</title>
+<style>
+.guest-page{max-width:760px;margin:auto;padding:18px 12px 100px}.guest-hero{padding:10px 2px 18px}.guest-hero h1{font-size:clamp(30px,8vw,44px);line-height:1;letter-spacing:-.055em;margin:8px 0 9px}.guest-hero h1 span{background:linear-gradient(90deg,#239fff,#8b4dff,#ff3e9e,#ff9418);-webkit-background-clip:text;background-clip:text;color:transparent}.guest-hero p{margin:0;color:#8995aa;font-size:12px;line-height:1.55}.guest-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid rgba(139,77,255,.22);border-radius:999px;background:rgba(139,77,255,.08);color:#bba4ff;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.workspace-grid{display:grid;gap:10px}.workspace-card{display:block;padding:16px;border:1px solid rgba(255,255,255,.075);border-radius:17px;background:linear-gradient(145deg,#11162a,#090d1a);color:#fff;text-decoration:none;transition:.16s ease}.workspace-card:active{transform:scale(.985)}.workspace-card:hover{border-color:rgba(139,77,255,.4)}.workspace-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,rgba(35,159,255,.16),rgba(139,77,255,.18),rgba(255,62,158,.12));font-size:17px;margin-bottom:11px}.workspace-card strong{display:block;font-size:13px}.workspace-card p{margin:5px 0 0;color:#778399;font-size:9px;line-height:1.5}.workspace-card.primary{background:linear-gradient(135deg,rgba(35,159,255,.13),rgba(139,77,255,.14),rgba(255,143,24,.08));border-color:rgba(139,77,255,.25)}.guest-track{margin-top:12px;padding:15px;border:1px solid rgba(255,255,255,.075);border-radius:17px;background:#0c1020}.guest-track h2{margin:0;font-size:13px}.guest-track p{margin:5px 0 11px;color:#758197;font-size:9px;line-height:1.45}.track-row{display:flex;gap:7px}.track-row input{flex:1;min-width:0;height:43px;padding:0 11px;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:#080e1a;color:#fff;outline:0;font-size:10px}.track-row button{height:43px;padding:0 14px;border:0;border-radius:11px;background:linear-gradient(135deg,#239fff,#8b4dff);color:#fff;font-size:9px;font-weight:900}.member-box{margin-top:10px;padding:13px;border:1px solid rgba(255,255,255,.06);border-radius:14px;background:rgba(255,255,255,.02);color:#7d899d;font-size:8.5px;line-height:1.5}.member-box a{color:#bca8ff;font-weight:900}.guest-note{margin-top:10px;color:#59667b;font-size:7.5px;line-height:1.5}@media(min-width:560px){.workspace-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar">
+<a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt="AshMediaBoost logo"><span>AshMedia<span>Boost</span></span></a>
+<a class="btn btn-small btn-ghost" href="login.html">Sign in</a>
+</header>
+<main class="guest-page">
+<section class="guest-hero">
+<span class="guest-badge">Guest workspace</span>
+<h1>Start without an <span>account.</span></h1>
+<p>You can order, pay and track an order without registering. Create an account later when you want order history, wallet features, rewards and member-only drops.</p>
+</section>
+<section class="workspace-grid">
+<a class="workspace-card primary" href="order.html">
+<div class="workspace-icon">＋</div><strong>Place a new order</strong><p>Choose a platform and service, enter your public target and quantity, then continue to checkout.</p>
+</a>
+<a class="workspace-card" href="free-trial.html">
+<div class="workspace-icon">✦</div><strong>Guest free trial</strong><p>Check whether the limited guest free-view opportunity is currently available.</p>
+</a>
+<a class="workspace-card" href="marketplace.html">
+<div class="workspace-icon">▦</div><strong>Browse services</strong><p>Explore the AshMediaBoost marketplace before deciding what you need.</p>
+</a>
+<a class="workspace-card" href="index.html#support">
+<div class="workspace-icon">?</div><strong>Get help</strong><p>Find support information and official contact options when you need assistance.</p>
+</a>
+</section>
+<section class="guest-track">
+<h2>Track an existing order</h2>
+<p>Enter your order number. A secure tracking token will be required for protected order details.</p>
+<div class="track-row"><input id="orderNumber" type="text" inputmode="text" autocomplete="off" placeholder="Order number"><button id="trackBtn" type="button">Track</button></div>
+<p id="trackMessage" class="guest-note" role="status"></p>
+</section>
+<div class="member-box"><strong>Ready for the full workspace?</strong> <a href="register.html">Create an account</a> to keep your orders connected, use member features and access your wallet and rewards.</div>
+<p class="guest-note">Guest checkout never requires your social-media password. Final service availability, pricing and order validation are handled by the platform backend.</p>
+</main>
+</div>
+<script src="assets/js/app.js"></script>
+<script>
+const btn=document.getElementById('trackBtn');
+const input=document.getElementById('orderNumber');
+const msg=document.getElementById('trackMessage');
+btn.addEventListener('click',()=>{const value=input.value.trim();if(!value){msg.textContent='Enter your order number to continue.';return;}msg.textContent='Secure order tracking will open here once the order backend is connected.';});
+</script>
+</body>
+</html>
