@@ -74,8 +74,6 @@
   const bar = document.getElementById('meterBar');
   if (!action || !status || !note || !text || !bar) return;
 
-  // The browser never selects or invents a provider service. The server endpoint
-  // will be responsible for returning the currently eligible cheapest views trial.
   const setUnavailable = (message) => {
     action.setAttribute('aria-disabled', 'true');
     action.classList.add('disabled');
